@@ -1,0 +1,2 @@
+# This will make the sql files not pushed into our project
+*.sql

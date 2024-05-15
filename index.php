@@ -1,13 +1,53 @@
 <?php
     session_start();
-    require "mailer.php";
+    require "db.php";
 
+    if(isset($_SESSION['token'])) {
+        // Assuming you have a function to verify and get user data by token
+        $user = getCustomerByToken($_SESSION['token']); // Replace with your actual function
+        if ($user) {
+            header("Location: " . $user['userType']);
+            exit;
+        }
+        $user = getMarketByToken($_SESSION['token']);
+        if ($user) {
+            header("Location: " . $user['userType']);
+            exit;
+        }
+    }
+
+    $error = '';
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $email = $_POST["email"];
-        $password = $_POST["password"];
+        $userType = htmlspecialchars($_POST['userType']);
+        $_SESSION["userType"] = $userType;
+        $email = filter_var($_POST["email"], FILTER_SANITIZE_EMAIL);
+        
+        if ($_POST["password"] != $_POST["passwordconfirm"]) {
+            $error = "Passwords do not match.";
+        } else {
+            $password = $_POST["password"];
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            $token = bin2hex(random_bytes(16));
 
-        verify_email($email);
-        echo "Verification code sent to your email.<br>";
+            $name = htmlspecialchars($_POST["name"]);
+            $city = htmlspecialchars($_POST["city"]);
+            $district = htmlspecialchars($_POST["district"]);
+            $address = htmlspecialchars($_POST["address"]);
+            $_SESSION["email"] = $email;
+            $_SESSION["token"] = $token;
+
+            if ($userType == "market" && !checkMarketExists($email)) {
+                storeInTemporaryTable($email, $hashed_password, $token, $name, $city, $district, $address, $userType);
+                header("Location: verify.php");
+                exit;
+            } elseif ($userType == "customer" && !checkCustomerExists($email)) {
+                storeInTemporaryTable($email, $hashed_password, $token, $name, $city, $district, $address, $userType);
+                header("Location: verify.php");
+                exit;
+            } else {
+                $error = "User already exists.";
+            }
+        }
     }
 ?>
 <!DOCTYPE html>
@@ -15,18 +55,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Registration Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-<body>
-    <a href="./consumer">Go to the consumer page.</a> <br>
-    <a href="./market">Go to the market page.</a>
-    <div>Login and registration will be done here.</div>
-    <form action="" method="post">
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-        <button type="submit">Login</button>
-    </form>
+<body class="bg-gray-50 flex items-center justify-center h-screen">
+    <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+        <div class="mb-4 text-center">
+            <h1 class="text-2xl font-semibold text-gray-700">Sign Up</h1>
+            <?php if (!empty($error)): ?>
+                <p class="text-red-500"><?php echo $error; ?></p>
+            <?php endif; ?>
+        </div>
+        <div class="flex justify-around mb-6">
+            <button type="button" onclick="showMarketForm()" class="flex items-center justify-center px-4 py-2 bg-blue-500 rounded-md text-white hover:bg-blue-600 transition duration-300">
+                <i class="fas fa-store mr-2"></i> Market User
+            </button>
+            <button type="button" onclick="showCustomerForm()" class="flex items-center justify-center px-4 py-2 bg-green-500 rounded-md text-white hover:bg-green-600 transition duration-300">
+                <i class="fas fa-user mr-2"></i> Customer User
+            </button>
+        </div>
+        <!-- Forms container -->
+        <div id="formsContainer" class="transition-colors duration-300">
+            <form id="marketForm" action="" method="post" class="hidden space-y-4">
+                <input type="hidden" name="userType" value="market">
+                <!-- Form fields with icons -->
+                <div class="relative">
+                    <i class="fas fa-envelope absolute text-gray-400 left-3 top-3"></i>
+                    <input type="email" name="email" required placeholder="Email" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                </div>
+                <div class="relative">
+                    <i class="fas fa-tag absolute text-gray-400 left-3 top-3"></i>
+                    <input type="text" name="name" required placeholder="Market Name" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                </div>
+                <div class="relative">
+                    <i class="fas fa-city absolute text-gray-400 left-3 top-3"></i>
+                    <input type="text" name="city" required placeholder="City" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                </div>
+                <div class="relative">
+                    <i class="fas fa-map-marker-alt absolute text-gray-400 left-3 top-3"></i>
+                    <input type="text" name="district" required placeholder="District" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                </div>
+                <div class="relative">
+                    <i class="fas fa-home absolute text-gray-400 left-3 top-3"></i>
+                    <input type="text" name="address" required placeholder="Address" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                </div>
+                <div class="relative">
+                    <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
+                    <input type="password" name="password" required placeholder="Password" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                </div>
+                <div class="relative">
+                    <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
+                    <input type="password" name="passwordconfirm" required placeholder="Confirm Password" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">Register</button>
+            </form>
+
+            <form id="customerForm" action="" method="post" class="hidden space-y-4">
+            <input type="hidden" name="userType" value="customer">
+                <!-- Form fields with icons -->
+                <div class="relative">
+                    <i class="fas fa-envelope absolute text-gray-400 left-3 top-3"></i>
+                    <input type="email" name="email" required placeholder="Email" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                </div>
+                <div class="relative">
+                    <i class="fas fa-tag absolute text-gray-400 left-3 top-3"></i>
+                    <input type="text" name="name" required placeholder="Full Name" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                </div>
+                <div class="relative">
+                    <i class="fas fa-city absolute text-gray-400 left-3 top-3"></i>
+                    <input type="text" name="city" required placeholder="City" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                </div>
+                <div class="relative">
+                    <i class="fas fa-map-marker-alt absolute text-gray-400 left-3 top-3"></i>
+                    <input type="text" name="district" required placeholder="District" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                </div>
+                <div class="relative">
+                    <i class="fas fa-home absolute text-gray-400 left-3 top-3"></i>
+                    <input type="text" name="address" required placeholder="Address" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                </div>
+                <div class="relative">
+                    <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
+                    <input type="password" name="password" required placeholder="Password" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                </div>
+                <div class="relative">
+                    <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
+                    <input type="password" name="passwordconfirm" required placeholder="Confirm Password" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">Register</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        function showMarketForm() {
+            document.getElementById("marketForm").style.display = "block";
+            document.getElementById("customerForm").style.display = "none";
+            document.getElementById("formsContainer").style.backgroundColor = '#e0f4ff';
+        }
+
+        function showCustomerForm() {
+            document.getElementById("marketForm").style.display = "none";
+            document.getElementById("customerForm").style.display = "block";
+            document.getElementById("formsContainer").style.backgroundColor = '#e0ffe8';
+        }
+    </script>
 </body>
 </html>
