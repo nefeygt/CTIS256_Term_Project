@@ -5,13 +5,13 @@
     if(isset($_SESSION['token'])) {
         // Assuming you have a function to verify and get user data by token
         $user = getCustomerByToken($_SESSION['token']); // Replace with your actual function
-        if ($user) {
-            header("Location: " . $user['userType']);
+        if ($user != false) {
+            header("Location: customer");
             exit;
         }
         $user = getMarketByToken($_SESSION['token']);
-        if ($user) {
-            header("Location: " . $user['userType']);
+        if ($user != false) {
+            header("Location: market");
             exit;
         }
     }

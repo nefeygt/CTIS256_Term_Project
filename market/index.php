@@ -8,7 +8,7 @@ if(!isset($_SESSION['token'])) {
 }
 
 $user = getMarketByToken($_SESSION['token']);
-if (!$user) {
+if ($user == false) {
     echo "Invalid session. Please re-login.";
     exit;
 }

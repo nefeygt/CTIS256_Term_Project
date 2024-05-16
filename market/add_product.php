@@ -2,13 +2,13 @@
 require "../db.php";
 session_start();
 
-if (!isset($_SESSION['token'])) {
-    header("Location: login.php");
+if(!isset($_SESSION['token'])) {
+    header("Location: login.php"); // Redirect to login if not authenticated
     exit;
 }
 
 $user = getMarketByToken($_SESSION['token']);
-if (!$user) {
+if ($user == false) {
     echo "Invalid session. Please re-login.";
     exit;
 }
