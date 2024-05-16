@@ -165,3 +165,93 @@ function emptyTables() {
     $stmt = $db->prepare("DELETE FROM market_user");
     $stmt->execute();
 }
+
+function getMarketItems($email) {
+    global $db;
+    $stmt = $db->prepare("SELECT * FROM stocks WHERE email = ?");
+    $stmt->execute([$email]);
+    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $stmt = $db->prepare("SELECT * FROM products WHERE product_id = ?");
+    $product_details = [];
+    foreach ($products as &$product) {
+        $stmt->execute([$product['product_id']]);
+        $product_detail = $stmt->fetch(PDO::FETCH_ASSOC);
+        $product['product_title'] = $product_detail['product_title'];
+        $product['product_price'] = $product_detail['product_price'];
+        $product['product_disc_price'] = $product_detail['product_disc_price'];
+        $product['product_exp_date'] = $product_detail['product_exp_date'];
+        $product['product_image'] = $product_detail['product_image'];
+        $product['product_city'] = $product_detail['product_city'];
+        $product_details[] = $product;
+    }
+
+    return $product_details;
+}
+
+function deleteProduct($product_id) {
+    global $db;
+    $stmt = $db->prepare("DELETE FROM stocks WHERE product_id = ?");
+    
+    $stmt->execute([$product_id]);
+    $stmt = $db->prepare("DELETE FROM products WHERE product_id = ?");
+    $stmt->execute([$product_id]);
+}
+
+function getProductById($product_id) {
+    global $db;
+    $stmt = $db->prepare("SELECT * FROM products WHERE product_id = ?");
+    $stmt->execute([$product_id]);
+    $product = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmt = $db->prepare("SELECT * FROM stocks WHERE product_id = ?");
+    $stmt->execute([$product_id]);
+    $stock = $stmt->fetch(PDO::FETCH_ASSOC);
+    $product['stock'] = $stock['stock'];
+    return $product;
+}
+
+function updateProduct($product_id, $product_title, $price, $disc_price, $product_exp_date, $product_image, $product_city, $stock) {
+    global $db;
+    try {
+        $db->beginTransaction();
+
+        // Update product details in the products table
+        $stmt = $db->prepare("UPDATE products SET product_title = ?, product_price = ?, product_disc_price = ?, product_exp_date = ?, product_image = ?, product_city = ? WHERE product_id = ?");
+        $stmt->execute([$product_title, $price, $disc_price, $product_exp_date, $product_image, $product_city, $product_id]);
+
+        // Update stock in the stocks table
+        $stmt = $db->prepare("UPDATE stocks SET stock = ? WHERE product_id = ?");
+        $stmt->execute([$stock, $product_id]);
+
+        $db->commit();
+        return true;
+    } catch (PDOException $e) {
+        $db->rollBack();
+        error_log("Database error: " . $e->getMessage());
+        return false;
+    }
+}
+
+function insertProduct($email, $title, $price, $disc_price, $exp_date, $product_image, $product_city, $stock) {
+    global $db;
+    try {
+        $db->beginTransaction();
+
+        // Insert into products table
+        $stmt = $db->prepare("INSERT INTO products (product_title, product_price, product_disc_price, product_exp_date, product_image, product_city) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$title, $price, $disc_price, $exp_date, $product_image, $product_city]);
+        $product_id = $db->lastInsertId();  // Assuming product_id is auto-incremented
+
+        // Insert into stocks table
+        $stmt = $db->prepare("INSERT INTO stocks (email, product_id, stock) VALUES (?, ?, ?)");
+        $stmt->execute([$email, $product_id, $stock]);
+
+        $db->commit();
+        return true;
+    } catch (PDOException $e) {
+        $db->rollBack();
+        error_log("Database error: " . $e->getMessage());
+        return false;
+    }
+}
+

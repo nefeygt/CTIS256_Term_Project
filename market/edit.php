@@ -1,33 +1,105 @@
+<?php
+require "../db.php";
+session_start();
+
+if (!isset($_SESSION['token'])) {
+    header("Location: login.php");
+    exit;
+}
+
+$user = getMarketByToken($_SESSION['token']);
+if (!$user) {
+    echo "Invalid session. Please re-login.";
+    exit;
+}
+
+// Check for product ID
+$product_id = isset($_GET['id']) ? $_GET['id'] : null;
+if (!$product_id) {
+    echo "Product ID is required.";
+    exit;
+}
+
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $title = $_POST['title'];
+    $price = $_POST['price'];
+    $disc_price = $_POST['disc_price'];
+    $exp_date = $_POST['exp_date'];
+    $product_image = $_POST['product_image'];
+    $product_city = $_POST['product_city'];
+    $stock = $_POST['stock']; // New stock field
+
+    // Update product in the database
+    $updated = updateProduct($product_id, $title, $price, $disc_price, $exp_date, $product_image, $product_city, $stock); // Pass stock to updateProduct
+    if ($updated) {
+        echo "Product updated successfully.";
+    } else {
+        echo "Failed to update product.";
+    }
+}
+
+// Fetch product details
+$product = getProductById($product_id);
+if (!$product) {
+    echo "Product not found.";
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Product - Godzilla</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Update Product</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.tailwindcss.com" rel="stylesheet">
 </head>
 <body>
-    <div class="navbar">
-        <a href="./index.php">Market</a>
-        <a href="./profile.php">Profile</a>
-    </div>
-    <div class="form-container">
-        <h2>Edit Product</h2>
-        <form action="update_product.php" method="post">
-            <label for="title">Title:</label>
-            <input type="text" id="title" name="title" required>
-            <label for="stock">Stock:</label>
-            <input type="number" id="stock" name="stock" required>
-            <label for="price">Price:</label>
-            <input type="text" id="price" name="price" required>
-            <label for="discounted_price">Discounted Price:</label>
-            <input type="text" id="discounted_price" name="discounted_price">
-            <label for="expiration_date">Expiration Date:</label>
-            <input type="date" id="expiration_date" name="expiration_date">
-            <input type="hidden" name="id" value="<?php echo $_GET['id']; ?>">  <!-- Pass the product ID to the update script -->
-            <button type="submit" class="btn edit">Update Product</button>
-        </form>
+    <div class="container mx-auto px-4">
+        <div class="navbar bg-gray-800 flex justify-between items-center my-4 p-4 text-white">
+            <a href="./index.php" class="text-blue-300 hover:text-blue-500"><i class="fas fa-store mr-2"></i>Market</a>
+            <a href="./profile.php" class="text-blue-300 hover:text-blue-500 flex items-center">
+                <i class="fas fa-user-circle mr-2"></i>
+                <?= htmlspecialchars($user['market_name']) ?>
+            </a>
+        </div>
+        <div class="mb-4 mt-8">
+            <h2 class="text-xl font-semibold">Update Product Details</h2>
+            <form action="" method="post" class="mt-4">
+                <div class="mb-4">
+                    <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+                    <input type="text" id="title" name="title" value="<?= htmlspecialchars($product['product_title']) ?>" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div class="mb-4">
+                    <label for="stock" class="block text-sm font-medium text-gray-700">Stock</label>
+                    <input type="number" id="stock" name="stock" value="<?= htmlspecialchars($product['stock']) ?>" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div class="mb-4">
+                    <label for="price" class="block text-sm font-medium text-gray-700">Price</label>
+                    <input type="text" id="price" name="price" value="<?= htmlspecialchars($product['product_price']) ?>" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div class="mb-4">
+                    <label for="disc_price" class="block text-sm font-medium text-gray-700">Discounted Price</label>
+                    <input type="text" id="disc_price" name="disc_price" value="<?= htmlspecialchars($product['product_disc_price']) ?>" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div class="mb-4">
+                    <label for="exp_date" class="block text-sm font-medium text-gray-700">Expiration Date</label>
+                    <input type="date" id="exp_date" name="exp_date" value="<?= htmlspecialchars($product['product_exp_date']) ?>" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div class="mb-4">
+                    <label for="product_image" class="block text-sm font-medium text-gray-700">Product Image</label>
+                    <input type="text" id="product_image" name="product_image" value="<?= htmlspecialchars($product['product_image']) ?>" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div class="mb-4">
+                    <label for="product_city" class="block text-sm font-medium text-gray-700">Product City</label>
+                    <input type="text" id="product_city" name="product_city" value="<?= htmlspecialchars($product['product_city']) ?>" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Update Product</button>
+            </form>
+        </div>
     </div>
 </body>
 </html>
