@@ -255,3 +255,18 @@ function insertProduct($email, $title, $price, $disc_price, $exp_date, $product_
     }
 }
 
+function isInStock($prod_id) {
+    global $db;
+
+    //stocks
+    $stmt = $db->query("select * from stocks");
+    $allstock = $stmt->fetchAll();
+    
+    foreach ($allstock as $stock) {
+        if($prod_id == $stock["product_id"]) {
+            return true;
+        }
+    }
+    
+    return false;
+}

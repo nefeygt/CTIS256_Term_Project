@@ -902,6 +902,7 @@ class PHPMailer
             return;
         }
         //Is this a PSR-3 logger?
+        // composer require psr/log
         if ($this->Debugoutput instanceof \Psr\Log\LoggerInterface) {
             $this->Debugoutput->debug($str);
 
