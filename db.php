@@ -168,23 +168,10 @@ function emptyTables() {
 
 function getMarketItems($email) {
     global $db;
-    $stmt = $db->prepare("SELECT * FROM stocks WHERE email = ?");
+    // Join stocks with products to fetch all details at once and order by product_exp_date
+    $stmt = $db->prepare("SELECT s.*, p.product_title, p.product_price, p.product_disc_price, p.product_exp_date, p.product_image, p.product_city FROM stocks s JOIN products p ON s.product_id = p.product_id WHERE s.email = ? ORDER BY p.product_exp_date");
     $stmt->execute([$email]);
-    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    $stmt = $db->prepare("SELECT * FROM products WHERE product_id = ?");
-    $product_details = [];
-    foreach ($products as &$product) {
-        $stmt->execute([$product['product_id']]);
-        $product_detail = $stmt->fetch(PDO::FETCH_ASSOC);
-        $product['product_title'] = $product_detail['product_title'];
-        $product['product_price'] = $product_detail['product_price'];
-        $product['product_disc_price'] = $product_detail['product_disc_price'];
-        $product['product_exp_date'] = $product_detail['product_exp_date'];
-        $product['product_image'] = $product_detail['product_image'];
-        $product['product_city'] = $product_detail['product_city'];
-        $product_details[] = $product;
-    }
+    $product_details = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     return $product_details;
 }
@@ -274,8 +261,8 @@ function isInStock($prod_id) {
 function getFilteredProducts($city, $district, $query) {
     global $db;
     $query = "%$query%";
-    $stmt = $db->prepare("SELECT * FROM products WHERE product_city = ? AND product_district = ? AND product_title LIKE ? ORDER BY product_id DESC");
-    $stmt->execute([$city, $district, $query]);
+    $stmt = $db->prepare("SELECT * FROM products WHERE product_city = ? AND product_title LIKE ? ORDER BY CASE WHEN product_district = ? THEN 1 ELSE 2 END, product_id DESC");
+    $stmt->execute([$city, $query, $district]);
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $stmt = $db->prepare("SELECT * FROM stocks");
     $stmt->execute();

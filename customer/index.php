@@ -57,6 +57,8 @@ $pages = ceil($total / $perPage);
                     <th class="py-3 px-6 text-left">Price</th>
                     <th class="py-3 px-6 text-left">Discounted Price</th>
                     <th class="py-3 px-6 text-left">Expiration Date</th>
+                    <th class="py-3 px-6 text-left">City</th>
+                    <th class="py-3 px-6 text-left">District</th>
                     <th class="py-3 px-6 text-center">Add to Cart</th>
                 </tr>
             </thead>
@@ -68,6 +70,8 @@ $pages = ceil($total / $perPage);
                     <td class="py-3 px-6"><?= htmlspecialchars($product['product_price']) ?></td>
                     <td class="py-3 px-6"><?= htmlspecialchars($product['product_disc_price']) ?></td>
                     <td class="py-3 px-6"><?= htmlspecialchars($product['product_exp_date']) ?></td>
+                    <td class="py-3 px-6"><?= htmlspecialchars($product['product_city']) ?></td>
+                    <td class="py-3 px-6"><?= htmlspecialchars($product['product_district']) ?></td>
                     <td class="py-3 px-6 text-center">
                         <form action="" method="post">
                             <input type="hidden" name="product_id" value="<?= $product['product_id'] ?>">

@@ -62,8 +62,10 @@ $pages = ceil($total / $perPage);
                 </tr>
             </thead>
             <tbody class="text-gray-600 text-sm font-light">
-                <?php foreach ($products as $product) { ?>
-                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                <?php foreach ($products as $product) { 
+                    $isExpired = strtotime($product['product_exp_date']) < time();
+                ?>
+                <tr class="border-b border-gray-200 hover:bg-gray-100 <?= $isExpired ? 'bg-red-200' : '' ?>">
                     <td class="py-3 px-6 text-left"><?= htmlspecialchars($product['product_title']) ?></td>
                     <td class="py-3 px-6 text-left"><?= htmlspecialchars($product['stock'] ?? 'N/A') ?></td>
                     <td class="py-3 px-6 text-left"><?= htmlspecialchars($product['product_price']) ?></td>
