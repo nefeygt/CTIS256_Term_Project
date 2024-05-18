@@ -31,12 +31,35 @@ $pages = ceil($total / $perPage);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Page</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0, 0, 0, 0.4); 
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; 
+            padding: 20px; 
+            border: 1px solid #888;
+            width: 80%; 
+            max-width: 400px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto px-4">
         <div class="navbar bg-gray-800 flex justify-between items-center my-4 p-4 text-white">
             <a href="./index.php" class="text-blue-300 hover:text-blue-500">Home</a>
             <a href="./profile.php" class="text-blue-300 hover:text-blue-500"><?= htmlspecialchars($user['name']) ?></a>
+            <button onclick="showLogoutModal()" class="text-red-300 hover:text-red-500 ml-4">Logout</button>
             <div class="relative">
                 <div class="cart-icon" onclick="toggleCart()">🛒</div>
                 <div class="cart-popup hidden absolute right-0 w-64 bg-white shadow-lg p-4">
@@ -90,10 +113,32 @@ $pages = ceil($total / $perPage);
             </ul>
         </nav>
     </div>
+
+    <!-- Logout Modal -->
+    <div id="logoutModal" class="modal">
+        <div class="modal-content">
+            <p>Are you sure you want to logout?</p>
+            <button onclick="logout()" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Yes, Logout</button>
+            <button onclick="hideLogoutModal()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Cancel</button>
+        </div>
+    </div>
+
     <script>
         function toggleCart() {
             const cartPopup = document.querySelector('.cart-popup');
             cartPopup.classList.toggle('hidden');
+        }
+
+        function showLogoutModal() {
+            document.getElementById('logoutModal').style.display = 'block';
+        }
+
+        function hideLogoutModal() {
+            document.getElementById('logoutModal').style.display = 'none';
+        }
+
+        function logout() {
+            window.location.href = '../logout.php';
         }
     </script>
 </body>

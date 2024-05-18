@@ -2,7 +2,7 @@
 session_start();
 require "db.php";
 
-if(isset($_SESSION['token'])) {
+if (isset($_SESSION['token'])) {
     // Assuming you have a function to verify and get user data by token
     $user = getCustomerByToken($_SESSION['token']); // Replace with your actual function
     if ($user != false) {
@@ -16,6 +16,8 @@ if(isset($_SESSION['token'])) {
     }
 }
 
+$errorMessage = "";
+
 if (isset($_POST['login'])) {
     $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
     $password = $_POST['password'];
@@ -23,10 +25,8 @@ if (isset($_POST['login'])) {
 
     if ($userType == "customer") {
         $user = getCustomer($email);
-        $_SESSION['token'] = $user['remember'];
     } else if ($userType == "market") {
         $user = getMarket($email);
-        $_SESSION['token'] = $user['remember'];
     } else {
         $user = null;
     }
