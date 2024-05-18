@@ -279,3 +279,15 @@ function getFilteredProducts($city, $district, $query) {
 
     return $filteredProducts;
 }
+
+function updateMarketUser($name, $address, $city, $district, $email) {
+    global $db;
+    $stmt = $db->prepare("UPDATE market_user SET market_name = ?, address = ?, city = ?, district = ? WHERE email = ?");
+    return $stmt->execute([$name, $address, $city, $district, $email]);
+}
+
+function updateCustomer($name, $address, $city, $district, $email) {
+    global $db;
+    $stmt = $db->prepare("UPDATE customers SET name = ?, address = ?, city = ?, district = ? WHERE email = ?");
+    return $stmt->execute([$name, $address, $city, $district, $email]);
+}
