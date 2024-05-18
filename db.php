@@ -291,3 +291,16 @@ function updateCustomer($name, $address, $city, $district, $email) {
     $stmt = $db->prepare("UPDATE customers SET name = ?, address = ?, city = ?, district = ? WHERE email = ?");
     return $stmt->execute([$name, $address, $city, $district, $email]);
 }
+
+function buyItem($product_id, $quantity) {
+    global $db;
+    $stmt = $db->prepare("SELECT stock FROM stocks WHERE product_id = ?");
+    $stmt->execute([$product_id]);
+    $stock = $stmt->fetchColumn();
+    if ($stock < $quantity) {
+        return false;
+    }
+    $stmt = $db->prepare("UPDATE stocks SET stock = stock - ? WHERE product_id = ?");
+    $stmt->execute([$quantity, $product_id]);
+    return true;
+}
