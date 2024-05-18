@@ -1,55 +1,54 @@
 <?php
-    session_start();
-    require "db.php";
+session_start();
+require "db.php";
 
-    if(isset($_SESSION['token'])) {
-        // Assuming you have a function to verify and get user data by token
-        $user = getCustomerByToken($_SESSION['token']); // Replace with your actual function
-        if ($user != false) {
-            header("Location: customer");
-            exit;
-        }
-        $user = getMarketByToken($_SESSION['token']);
-        if ($user != false) {
-            header("Location: market");
-            exit;
-        }
+if(isset($_SESSION['token'])) {
+    // Assuming you have a function to verify and get user data by token
+    $user = getCustomerByToken($_SESSION['token']); // Replace with your actual function
+    if ($user != false) {
+        header("Location: customer");
+        exit;
     }
-
-    $error = '';
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $userType = htmlspecialchars($_POST['userType']);
-        $_SESSION["userType"] = $userType;
-        $email = filter_var($_POST["email"], FILTER_SANITIZE_EMAIL);
-        
-        if ($_POST["password"] != $_POST["passwordconfirm"]) {
-            $error = "Passwords do not match.";
-        } else {
-            $password = $_POST["password"];
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $token = bin2hex(random_bytes(16));
-
-            $name = htmlspecialchars($_POST["name"]);
-            $city = htmlspecialchars($_POST["city"]);
-            $district = htmlspecialchars($_POST["district"]);
-            $address = htmlspecialchars($_POST["address"]);
-            $_SESSION["email"] = $email;
-            $_SESSION["token"] = $token;
-
-            if ($userType == "market" && !checkMarketExists($email)) {
-                storeInTemporaryTable($email, $hashed_password, $token, $name, $city, $district, $address, $userType);
-                header("Location: verify.php");
-                exit;
-            } elseif ($userType == "customer" && !checkCustomerExists($email)) {
-                storeInTemporaryTable($email, $hashed_password, $token, $name, $city, $district, $address, $userType);
-                header("Location: verify.php");
-                exit;
-            } else {
-                $error = "User already exists.";
-            }
-        }
+    $user = getMarketByToken($_SESSION['token']);
+    if ($user != false) {
+        header("Location: market");
+        exit;
     }
+}
+
+$error = '';
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $userType = htmlspecialchars($_POST['userType']);
+    $_SESSION["userType"] = $userType;
+    $email = filter_var($_POST["email"], FILTER_SANITIZE_EMAIL);
     
+    if ($_POST["password"] != $_POST["passwordconfirm"]) {
+        $error = "Passwords do not match.";
+    } else {
+        $password = $_POST["password"];
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+        $token = bin2hex(random_bytes(16));
+
+        $name = htmlspecialchars($_POST["name"]);
+        $city = htmlspecialchars($_POST["city"]);
+        $district = htmlspecialchars($_POST["district"]);
+        $address = htmlspecialchars($_POST["address"]);
+        $_SESSION["email"] = $email;
+        $_SESSION["token"] = $token;
+
+        if ($userType == "market" && !checkMarketExists($email)) {
+            storeInTemporaryTable($email, $hashed_password, $token, $name, $city, $district, $address, $userType);
+            header("Location: verify.php");
+            exit;
+        } elseif ($userType == "customer" && !checkCustomerExists($email)) {
+            storeInTemporaryTable($email, $hashed_password, $token, $name, $city, $district, $address, $userType);
+            header("Location: verify.php");
+            exit;
+        } else {
+            $error = "User already exists.";
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -114,7 +113,7 @@
             </form>
 
             <form id="customerForm" action="" method="post" class="hidden space-y-4">
-            <input type="hidden" name="userType" value="customer">
+                <input type="hidden" name="userType" value="customer">
                 <!-- Form fields with icons -->
                 <div class="relative">
                     <i class="fas fa-envelope absolute text-gray-400 left-3 top-3"></i>
@@ -146,6 +145,9 @@
                 </div>
                 <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">Register</button>
             </form>
+        </div>
+        <div class="text-center mt-6">
+            <p class="text-gray-600">Already have an account? <a href="login.php" class="text-blue-500 hover:underline">Log in here</a>.</p>
         </div>
     </div>
     <script>
