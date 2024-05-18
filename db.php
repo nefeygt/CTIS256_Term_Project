@@ -270,3 +270,25 @@ function isInStock($prod_id) {
     
     return false;
 }
+
+function getFilteredProducts($city, $district, $query) {
+    global $db;
+    $query = "%$query%";
+    $stmt = $db->prepare("SELECT * FROM products WHERE product_city = ? AND product_district = ? AND product_title LIKE ? ORDER BY product_id DESC");
+    $stmt->execute([$city, $district, $query]);
+    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt = $db->prepare("SELECT * FROM stocks");
+    $stmt->execute();
+    $stocks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $filteredProducts = [];
+    foreach ($products as $product) {
+        foreach ($stocks as $stock) {
+            if ($product['product_id'] == $stock['product_id']) {
+                $product['stock'] = $stock['stock'];
+                $filteredProducts[] = $product;
+            }
+        }
+    }
+
+    return $filteredProducts;
+}

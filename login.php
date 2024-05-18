@@ -23,8 +23,10 @@ if (isset($_POST['login'])) {
 
     if ($userType == "customer") {
         $user = getCustomer($email);
+        $_SESSION['token'] = $user['remember'];
     } else if ($userType == "market") {
         $user = getMarket($email);
+        $_SESSION['token'] = $user['remember'];
     } else {
         $user = null;
     }
