@@ -28,10 +28,6 @@ if (isset($_POST['product_id']) && isset($_POST['action'])) {
     }
 }
 
-session_start();
-
-$_SESSION['show_popup'] = true;
-
 header('Location: index.php');
 exit;
 

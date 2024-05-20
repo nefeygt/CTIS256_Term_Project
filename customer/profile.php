@@ -38,15 +38,15 @@ $district = htmlspecialchars($customerInfo['district']);
 <body>
     <div class="container mx-auto px-4">
         <div class="navbar bg-gray-800 flex justify-between items-center my-4 p-4 text-white">
-            <a href="./index.php" class="text-blue-300 hover:text-blue-500"><i class="fas fa-store mr-2"></i>Consumer</a>
+            <a href="./index.php" class="text-blue-300 hover:text-blue-500"><i class="fas fa-store mr-2"></i>Home</a>
             <a href="./profile.php" class="text-blue-300 hover:text-blue-500 flex items-center">
                 <i class="fas fa-user-circle mr-2"></i>
                 <?= $name ?>
             </a>
         </div>
         <div class="mb-4">
-            <h2 class="text-2xl font-bold mb-2">Consumer Profile</h2>
-            <p><strong>Consumer Name:</strong> <?= $name ?></p>
+            <h2 class="text-2xl font-bold mb-2">Customer Profile</h2>
+            <p><strong>Customer Name:</strong> <?= $name ?></p>
             <p><strong>Address:</strong> <?= $address ?></p>
             <p><strong>City:</strong> <?= $city ?></p>
             <p><strong>District:</strong> <?= $district ?></p>
