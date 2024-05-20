@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $disc_price = $_POST['disc_price'];
     $exp_date = $_POST['exp_date'];
     $product_city = $_POST['product_city'];
+    $product_district = $_POST['product_district'];
     $stock = $_POST['stock'];
 
     // Handle file upload
@@ -39,7 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $upload_path = $upload_dir . $new_file_name;
             if (move_uploaded_file($file_tmp, $upload_path)) {
                 // Insert new product into the database
-                if (insertProduct($user['email'], $title, $price, $disc_price, $exp_date, $new_file_name, $product_city, $stock)) {
+                
+                if (insertProduct($user['email'], $title, $price, $disc_price, $exp_date, $file_name, $product_city, $product_district, $stock)) {
                     echo "Product added successfully.";
                 } else {
                     echo "Failed to add product.";
@@ -127,6 +129,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="mb-4">
                     <label for="product_city" class="block text-sm font-medium text-gray-700">Product City</label>
                     <input type="text" id="product_city" name="product_city" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+
+                <div class="mb-4">
+                    <label for="product_district" class="block text-sm font-medium text-gray-700">Product District</label>
+                    <input type="text" id="product_district" name="product_district" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                 </div>
 
                 <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add Product</button>

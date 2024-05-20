@@ -219,14 +219,14 @@ function updateProduct($product_id, $product_title, $price, $disc_price, $produc
     }
 }
 
-function insertProduct($email, $title, $price, $disc_price, $exp_date, $product_image, $product_city, $stock) {
+function insertProduct($email, $title, $price, $disc_price, $exp_date, $product_image, $product_city, $product_district, $stock) {
     global $db;
     try {
         $db->beginTransaction();
 
         // Insert into products table
-        $stmt = $db->prepare("INSERT INTO products (product_title, product_price, product_disc_price, product_exp_date, product_image, product_city) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$title, $price, $disc_price, $exp_date, $product_image, $product_city]);
+        $stmt = $db->prepare("INSERT INTO products (product_title, product_price, product_disc_price, product_exp_date, product_image, product_city, product_district) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$title, $price, $disc_price, $exp_date, $product_image, $product_city, $product_district]);
         $product_id = $db->lastInsertId();  // Assuming product_id is auto-incremented
 
         // Insert into stocks table
