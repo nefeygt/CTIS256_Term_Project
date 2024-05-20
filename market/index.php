@@ -35,7 +35,28 @@ $pages = ceil($total / $perPage);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Godzilla</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+    <style>
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0, 0, 0, 0.4); 
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; 
+            padding: 20px; 
+            border: 1px solid #888;
+            width: 80%; 
+            max-width: 400px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
     <div class="container mx-auto px-4">
@@ -45,6 +66,7 @@ $pages = ceil($total / $perPage);
                 <i class="fas fa-user-circle mr-2"></i>
                 <?= htmlspecialchars($user['market_name']) ?>
             </a>
+            <button onclick="showLogoutModal()" class="text-red-300 hover:text-red-500 ml-4">Logout</button>
         </div>
         <div class="mb-4 flex justify-center">
             <a href="add_product.php" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add New Product</a>
@@ -85,5 +107,28 @@ $pages = ceil($total / $perPage);
             </ul>
         </nav>
     </div>
+
+    <!-- Logout Modal -->
+    <div id="logoutModal" class="modal">
+        <div class="modal-content">
+            <p>Are you sure you want to logout?</p>
+            <button onclick="logout()" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Yes, Logout</button>
+            <button onclick="hideLogoutModal()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        function showLogoutModal() {
+            document.getElementById('logoutModal').style.display = 'block';
+        }
+
+        function hideLogoutModal() {
+            document.getElementById('logoutModal').style.display = 'none';
+        }
+
+        function logout() {
+            window.location.href = '../logout.php';
+        }
+    </script>
 </body>
 </html>

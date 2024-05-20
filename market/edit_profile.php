@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 // Initialize variables
-$name = $marketInfo['name'];
+$name = $marketInfo['market_name'];
 $address = $marketInfo['address'];
 $city = $marketInfo['city'];
 $district = $marketInfo['district']; 
@@ -61,7 +61,7 @@ $district = $marketInfo['district'];
             <a href="./index.php" class="text-blue-300 hover:text-blue-500"><i class="fas fa-store mr-2"></i>Market</a>
             <a href="./profile.php" class="text-blue-300 hover:text-blue-500 flex items-center">
                 <i class="fas fa-user-circle mr-2"></i>
-                <?= htmlspecialchars($marketInfo['name']) ?>
+                <?= htmlspecialchars($marketInfo['market_name']) ?>
             </a>
         </div>
         <div class="mb-4">
