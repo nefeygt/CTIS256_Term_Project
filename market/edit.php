@@ -3,12 +3,12 @@ require "../db.php";
 session_start();
 
 if (!isset($_SESSION['token'])) {
-    header("Location: login.php");
+    header("Location: login.php"); // Redirect to login if not authenticated
     exit;
 }
 
 $user = getMarketByToken($_SESSION['token']);
-if (!$user) {
+if ($user == false) {
     echo "Invalid session. Please re-login.";
     exit;
 }
@@ -21,30 +21,63 @@ if (!$product_id) {
     exit;
 }
 
+// Fetch product details
+$product = getProductById($product_id);
+if (!$product) {
+    echo "Product not found.";
+    exit;
+}
+
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $title = $_POST['title'];
     $price = $_POST['price'];
     $disc_price = $_POST['disc_price'];
     $exp_date = $_POST['exp_date'];
-    $product_image = $_POST['product_image'];
     $product_city = $_POST['product_city'];
-    $stock = $_POST['stock']; // New stock field
+    $stock = $_POST['stock'];
+
+    // Handle file upload
+    $product_image = $product['product_image']; // Keep the current image by default
+    if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] == 0) {
+        $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+        $file_name = $_FILES['product_image']['name'];
+        $file_tmp = $_FILES['product_image']['tmp_name'];
+        $file_size = $_FILES['product_image']['size'];
+        $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+
+        if (in_array($file_ext, $allowed) && $file_size <= 2097152) { // 2MB file size limit
+            $new_file_name = uniqid() . '.' . $file_ext;
+            $upload_dir = '../uploads/';
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+            $upload_path = $upload_dir . $new_file_name;
+            if (move_uploaded_file($file_tmp, $upload_path)) {
+                // Remove the old image file if a new image is uploaded
+                if ($product['product_image'] && file_exists($upload_dir . $product['product_image'])) {
+                    unlink($upload_dir . $product['product_image']);
+                }
+                $product_image = $new_file_name; // Use the new image file name
+            } else {
+                echo "Failed to upload image.";
+                exit;
+            }
+        } else {
+            echo "Invalid file type or size. Allowed types: jpg, jpeg, png, gif. Max size: 2MB.";
+            exit;
+        }
+    }
 
     // Update product in the database
-    $updated = updateProduct($product_id, $title, $price, $disc_price, $exp_date, $product_image, $product_city, $stock); // Pass stock to updateProduct
+    $updated = updateProduct($product_id, $title, $price, $disc_price, $exp_date, $product_image, $product_city, $stock);
     if ($updated) {
         echo "Product updated successfully.";
+        // Refresh the product details after update
+        $product = getProductById($product_id);
     } else {
         echo "Failed to update product.";
     }
-}
-
-// Fetch product details
-$product = getProductById($product_id);
-if (!$product) {
-    echo "Product not found.";
-    exit;
 }
 ?>
 
@@ -57,6 +90,32 @@ if (!$product) {
     <title>Update Product</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+    <script>
+        // Function to preview the image before upload
+        function previewImage(event) {
+            var reader = new FileReader();
+            reader.onload = function() {
+                var output = document.getElementById('imagePreview');
+                output.src = reader.result;
+                output.style.display = 'block';
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        // Function to show the current image initially
+        function showCurrentImage(imagePath) {
+            var output = document.getElementById('imagePreview');
+            output.src = imagePath;
+            output.style.display = 'block';
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Show current image on page load
+            <?php if ($product['product_image']) : ?>
+                showCurrentImage("../uploads/<?= htmlspecialchars($product['product_image']) ?>");
+            <?php endif; ?>
+        });
+    </script>
 </head>
 <body>
     <div class="container mx-auto px-4">
@@ -69,7 +128,7 @@ if (!$product) {
         </div>
         <div class="mb-4 mt-8">
             <h2 class="text-xl font-semibold">Update Product Details</h2>
-            <form action="" method="post" class="mt-4">
+            <form action="" method="post" enctype="multipart/form-data" class="mt-4">
                 <div class="mb-4">
                     <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
                     <input type="text" id="title" name="title" value="<?= htmlspecialchars($product['product_title']) ?>" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
@@ -92,7 +151,8 @@ if (!$product) {
                 </div>
                 <div class="mb-4">
                     <label for="product_image" class="block text-sm font-medium text-gray-700">Product Image</label>
-                    <input type="text" id="product_image" name="product_image" value="<?= htmlspecialchars($product['product_image']) ?>" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    <img id="imagePreview" src="#" alt="Product Image" class="mb-4 max-w-xs" style="display: none;" />
+                    <input type="file" id="product_image" name="product_image" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" onchange="previewImage(event)">
                 </div>
                 <div class="mb-4">
                     <label for="product_city" class="block text-sm font-medium text-gray-700">Product City</label>

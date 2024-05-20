@@ -168,23 +168,10 @@ function emptyTables() {
 
 function getMarketItems($email) {
     global $db;
-    $stmt = $db->prepare("SELECT * FROM stocks WHERE email = ?");
+    // Join stocks with products to fetch all details at once and order by product_exp_date
+    $stmt = $db->prepare("SELECT s.*, p.product_title, p.product_price, p.product_disc_price, p.product_exp_date, p.product_image, p.product_city FROM stocks s JOIN products p ON s.product_id = p.product_id WHERE s.email = ? ORDER BY p.product_exp_date");
     $stmt->execute([$email]);
-    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    $stmt = $db->prepare("SELECT * FROM products WHERE product_id = ?");
-    $product_details = [];
-    foreach ($products as &$product) {
-        $stmt->execute([$product['product_id']]);
-        $product_detail = $stmt->fetch(PDO::FETCH_ASSOC);
-        $product['product_title'] = $product_detail['product_title'];
-        $product['product_price'] = $product_detail['product_price'];
-        $product['product_disc_price'] = $product_detail['product_disc_price'];
-        $product['product_exp_date'] = $product_detail['product_exp_date'];
-        $product['product_image'] = $product_detail['product_image'];
-        $product['product_city'] = $product_detail['product_city'];
-        $product_details[] = $product;
-    }
+    $product_details = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     return $product_details;
 }
@@ -255,3 +242,52 @@ function insertProduct($email, $title, $price, $disc_price, $exp_date, $product_
     }
 }
 
+function isInStock($prod_id) {
+    global $db;
+
+    //stocks
+    $stmt = $db->query("select * from stocks");
+    $allstock = $stmt->fetchAll();
+    
+    foreach ($allstock as $stock) {
+        if($prod_id == $stock["product_id"]) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+function getFilteredProducts($city, $district, $query) {
+    global $db;
+    $query = "%$query%";
+    $stmt = $db->prepare("SELECT * FROM products WHERE product_city = ? AND product_title LIKE ? ORDER BY CASE WHEN product_district = ? THEN 1 ELSE 2 END, product_id DESC");
+    $stmt->execute([$city, $query, $district]);
+    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt = $db->prepare("SELECT * FROM stocks");
+    $stmt->execute();
+    $stocks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $filteredProducts = [];
+    foreach ($products as $product) {
+        foreach ($stocks as $stock) {
+            if ($product['product_id'] == $stock['product_id']) {
+                $product['stock'] = $stock['stock'];
+                $filteredProducts[] = $product;
+            }
+        }
+    }
+
+    return $filteredProducts;
+}
+
+function updateMarketUser($name, $address, $city, $district, $email) {
+    global $db;
+    $stmt = $db->prepare("UPDATE market_user SET market_name = ?, address = ?, city = ?, district = ? WHERE email = ?");
+    return $stmt->execute([$name, $address, $city, $district, $email]);
+}
+
+function updateCustomer($name, $address, $city, $district, $email) {
+    global $db;
+    $stmt = $db->prepare("UPDATE customers SET name = ?, address = ?, city = ?, district = ? WHERE email = ?");
+    return $stmt->execute([$name, $address, $city, $district, $email]);
+}

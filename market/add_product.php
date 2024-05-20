@@ -3,12 +3,12 @@ require "../db.php";
 session_start();
 
 if (!isset($_SESSION['token'])) {
-    header("Location: login.php");
+    header("Location: login.php"); // Redirect to login if not authenticated
     exit;
 }
 
 $user = getMarketByToken($_SESSION['token']);
-if (!$user) {
+if ($user == false) {
     echo "Invalid session. Please re-login.";
     exit;
 }
@@ -19,15 +19,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $price = $_POST['price'];
     $disc_price = $_POST['disc_price'];
     $exp_date = $_POST['exp_date'];
-    $product_image = $_POST['product_image'];
     $product_city = $_POST['product_city'];
     $stock = $_POST['stock'];
 
-    // Insert new product into the database
-    if (insertProduct($user['email'], $title, $price, $disc_price, $exp_date, $product_image, $product_city, $stock)) {
-        echo "Product added successfully.";
+    // Handle file upload
+    if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] == 0) {
+        $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+        $file_name = $_FILES['product_image']['name'];
+        $file_tmp = $_FILES['product_image']['tmp_name'];
+        $file_size = $_FILES['product_image']['size'];
+        $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+
+        if (in_array($file_ext, $allowed) && $file_size <= 2097152) { // 2MB file size limit
+            $new_file_name = uniqid() . '.' . $file_ext;
+            $upload_dir = '../uploads/';
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+            $upload_path = $upload_dir . $new_file_name;
+            if (move_uploaded_file($file_tmp, $upload_path)) {
+                // Insert new product into the database
+                if (insertProduct($user['email'], $title, $price, $disc_price, $exp_date, $new_file_name, $product_city, $stock)) {
+                    echo "Product added successfully.";
+                } else {
+                    echo "Failed to add product.";
+                }
+            } else {
+                echo "Failed to upload image.";
+            }
+        } else {
+            echo "Invalid file type or size. Allowed types: jpg, jpeg, png, gif. Max size: 2MB.";
+        }
     } else {
-        echo "Failed to add product.";
+        echo "No file uploaded or there was an upload error.";
     }
 }
 ?>
@@ -41,6 +65,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Add New Product</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+    <script>
+        // Function to preview the image before upload
+        function previewImage(event) {
+            var reader = new FileReader();
+            reader.onload = function() {
+                var output = document.getElementById('imagePreview');
+                output.src = reader.result;
+                output.style.display = 'block';
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
 </head>
 <body>
     <div class="container mx-auto px-4">
@@ -89,8 +125,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <input type="text" id="product_city" name="product_city" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" value="<?= htmlspecialchars($product_city)?>">
             </div>
 
-            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add Product</button>
+                <div class="mb-4">
+                    <label for="product_city" class="block text-sm font-medium text-gray-700">Product City</label>
+                    <input type="text" id="product_city" name="product_city" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
 
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add Product</button>
             </form>
         </div>
     </div>

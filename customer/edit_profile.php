@@ -10,19 +10,19 @@ if (!isset($_SESSION['token'])) {
 
 // Fetch the market information using the email stored in the session
 $token = $_SESSION['token'];
-$marketInfo = getMarketByToken($token);
+$marketInfo = getCustomerByToken($token);
 
 // If the market information is not found, display an error message and exit
-if (!$marketInfo) {
+if ($marketInfo == false) {
     echo "Market information not found.";
     exit;
 }
 
-// Initialize variables
 $name = $marketInfo['name'];
 $address = $marketInfo['address'];
 $city = $marketInfo['city'];
 $district = $marketInfo['district'];
+$email = $marketInfo['email'];
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -31,14 +31,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $address = htmlspecialchars($_POST['address']);
     $city = htmlspecialchars($_POST['city']);
     $district = htmlspecialchars($_POST['district']);
-    
+
     // Update the market information in the database
-    $stmt = $db->prepare("UPDATE market_user SET name = ?, address = ?, city = ?, district = ? WHERE email = ?");
-    if ($stmt->execute([$name, $address, $city, $district, $email])) {
+    $res = updateCustomer($name, $address, $city, $district, $email);
+    if ($res === true) {
         echo "Profile updated successfully.";
-        // Optionally, redirect to profile page after updating
-        // header("Location: profile.php");
-        // exit;
     } else {
         echo "Error updating profile.";
     }
@@ -68,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h2 class="text-2xl font-bold mb-2">Edit Profile</h2>
             <form action="edit_profile.php" method="POST" class="space-y-4">
                 <div>
-                    <label for="name" class="block text-gray-700">Name:</label>
+                    <label for="name" class="block text-gray-700">Consumer Name:</label>
                     <input type="text" id="name" name="name" value="<?= htmlspecialchars($name) ?>" class="w-full p-2 border border-gray-300 rounded">
                 </div>
                 <div>
@@ -83,6 +80,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <label for="district" class="block text-gray-700">District:</label>
                     <input type="text" id="district" name="district" value="<?= htmlspecialchars($district) ?>" class="w-full p-2 border border-gray-300 rounded">
                 </div>
+                <!-- <div>
+                    <label for="email" class="block text-gray-700">Email:</label>
+                    <input type="email" id="email" name="email" value="<?= htmlspecialchars($email) ?>" class="w-full p-2 border border-gray-300 rounded">
+                </div> -->
                 <div>
                     <button type="submit" class="bg-blue-500 hover bg-blue-700 text-white font-bold py-2 px-4 rounded">Update Profile</button>
                 </div>
@@ -90,4 +91,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </body>
-
