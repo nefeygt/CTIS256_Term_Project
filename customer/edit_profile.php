@@ -2,43 +2,61 @@
 require "../db.php";
 session_start();
 
+function setFlashMessage($type, $message) {
+    $_SESSION['flash'] = ['type' => $type, 'message' => $message];
+}
+
+function displayFlashMessage() {
+    if (isset($_SESSION['flash'])) {
+        $flash = $_SESSION['flash'];
+        $class = $flash['type'] === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+        echo "<div id='flash-modal' class='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center' onclick='this.remove();'>
+                <div class='p-4 border rounded {$class}' onclick='event.stopPropagation();'>{$flash['message']}
+                    <button class='ml-4 px-4 py-2 rounded text-white bg-blue-500' onclick='document.getElementById(\"flash-modal\").remove();'>Close</button>
+                </div>
+              </div>";
+        unset($_SESSION['flash']); // Clear the flash message after displaying
+    }
+}
+
 // Ensure the user is authenticated
 if (!isset($_SESSION['token'])) {
     header("Location: login.php"); // Redirect to login if not authenticated
     exit;
 }
 
-// Fetch the market information using the email stored in the session
+// Fetch the customer information using the email stored in the session
 $token = $_SESSION['token'];
-$marketInfo = getCustomerByToken($token);
+$customerInfo = getCustomerByToken($token);
 
-// If the market information is not found, display an error message and exit
-if ($marketInfo == false) {
-    echo "Market information not found.";
+// If the customer information is not found
+if ($customerInfo == false) {
+    setFlashMessage('error', 'Customer information not found.');
+    header("Location: error_page.php"); // Redirect to an error page
     exit;
 }
 
-$name = $marketInfo['name'];
-$address = $marketInfo['address'];
-$city = $marketInfo['city'];
-$district = $marketInfo['district'];
-$email = $marketInfo['email'];
+$name = $customerInfo['name'];
+$address = $customerInfo['address'];
+$city = $customerInfo['city'];
+$district = $customerInfo['district'];
+$email = $customerInfo['email'];
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Retrieve and sanitize input data
     $name = htmlspecialchars($_POST['name']);
     $address = htmlspecialchars($_POST['address']);
     $city = htmlspecialchars($_POST['city']);
     $district = htmlspecialchars($_POST['district']);
 
-    // Update the market information in the database
     $res = updateCustomer($name, $address, $city, $district, $email);
     if ($res === true) {
-        echo "Profile updated successfully.";
+        setFlashMessage('success', 'Profile updated successfully.');
     } else {
-        echo "Error updating profile.";
+        setFlashMessage('error', 'Error updating profile.');
     }
+    header("Location: edit_profile.php"); // Redirect back to the form or to the success page
+    exit;
 }
 ?>
 
@@ -54,18 +72,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <div class="container mx-auto px-4">
+        <?php displayFlashMessage(); ?>
         <div class="navbar bg-gray-800 flex justify-between items-center my-4 p-4 text-white">
-            <a href="./index.php" class="text-blue-300 hover:text-blue-500"><i class="fas fa-store mr-2"></i>Market</a>
+            <a href="./index.php" class="text-blue-300 hover:text-blue-500"><i class="fas fa-store mr-2"></i>Home</a>
             <a href="./profile.php" class="text-blue-300 hover:text-blue-500 flex items-center">
                 <i class="fas fa-user-circle mr-2"></i>
-                <?= htmlspecialchars($marketInfo['name']) ?>
+                <?= htmlspecialchars($customerInfo['name']) ?>
             </a>
         </div>
         <div class="mb-4">
             <h2 class="text-2xl font-bold mb-2">Edit Profile</h2>
             <form action="edit_profile.php" method="POST" class="space-y-4">
                 <div>
-                    <label for="name" class="block text-gray-700">Consumer Name:</label>
+                    <label for="name" class="block text-gray-700">Customer Name:</label>
                     <input type="text" id="name" name="name" value="<?= htmlspecialchars($name) ?>" class="w-full p-2 border border-gray-300 rounded">
                 </div>
                 <div>

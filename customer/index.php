@@ -1,17 +1,39 @@
 <?php
-
 session_start();
 require "../db.php";
 
+function setFlashMessage($type, $message) {
+    $_SESSION['flash'] = ['type' => $type, 'message' => $message];
+}
 
-if(!isset($_SESSION['token'])) {
-    header("Location: ../login.php"); // Redirect to login if not authenticated
+function displayFlashMessage() {
+    if (isset($_SESSION['flash'])) {
+        $flash = $_SESSION['flash'];
+        $class = $flash['type'] === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+        echo "<div id='flash-modal' class='modal'>
+                <div class='modal-content {$class}'>
+                    <p>{$flash['message']}</p>
+                    <button onclick='hideFlashModal()' class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>Close</button>
+                </div>
+              </div>";
+        unset($_SESSION['flash']); // Clear the flash message after displaying
+    }
+}
+
+function hideFlashModal() {
+    echo "<script>document.getElementById('flash-modal').style.display = 'none';</script>";
+}
+
+if (!isset($_SESSION['token'])) {
+    setFlashMessage('error', 'You are not logged in. Please login to continue.');
+    header("Location: ../login.php");
     exit;
 }
 
 $user = getCustomerByToken($_SESSION['token']);
 if ($user == false) {
-    echo "Invalid session. Please re-login.";
+    setFlashMessage('error', 'Invalid session. Please re-login.');
+    header("Location: ../login.php");
     exit;
 }
 
@@ -68,10 +90,20 @@ $pages = ceil($total / $perPage);
         #logoutModal {
             display: none;
         }
+
+        .cart-icon {
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .cart-icon:hover {
+            background-color: #f0f0f0; /* Change this to your preferred color */
+        }
     </style>
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto px-4">
+        <?php displayFlashMessage(); ?>
         <div class="navbar bg-gray-800 flex justify-between items-center my-4 p-4 text-white">
             <a href="./index.php" class="text-blue-300 hover:text-blue-500">Home</a>
             <a href="./profile.php" class="text-blue-300 hover:text-blue-500"><?= htmlspecialchars($user['name']) ?></a>

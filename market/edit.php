@@ -2,32 +2,51 @@
 require "../db.php";
 session_start();
 
+function setFlashMessage($type, $message) {
+    $_SESSION['flash'] = ['type' => $type, 'message' => $message];
+}
+
+function displayFlashMessage() {
+    if (isset($_SESSION['flash'])) {
+        $flash = $_SESSION['flash'];
+        $class = $flash['type'] === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+        echo "<div id='flash-modal' class='modal' style='display: block;'>
+                <div class='modal-content {$class}'>
+                    <p>{$flash['message']}</p>
+                    <button onclick='hideFlashModal()' class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>Close</button>
+                </div>
+              </div>";
+        unset($_SESSION['flash']); // Clear the flash message after displaying
+    }
+}
+
 if (!isset($_SESSION['token'])) {
-    header("Location: login.php"); // Redirect to login if not authenticated
+    setFlashMessage('error', 'You are not logged in. Please login to continue.');
+    header("Location: login.php");
     exit;
 }
 
 $user = getMarketByToken($_SESSION['token']);
 if ($user == false) {
-    echo "Invalid session. Please re-login.";
+    setFlashMessage('error', 'Invalid session. Please re-login.');
+    header("Location: login.php");
     exit;
 }
 
-// Check for product ID
-$product_id = isset($_GET['id']) ? $_GET['id'] : null;
+$product_id = $_GET['id'] ?? null;
 if (!$product_id) {
-    echo "Product ID is required.";
+    setFlashMessage('error', 'Product ID is required.');
+    header("Location: index.php"); // Redirect to a safe page
     exit;
 }
 
-// Fetch product details
 $product = getProductById($product_id);
 if (!$product) {
-    echo "Product not found.";
+    setFlashMessage('error', 'Product not found.');
+    header("Location: index.php"); // Redirect to a safe page
     exit;
 }
 
-// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $title = $_POST['title'];
     $price = $_POST['price'];
@@ -36,7 +55,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $product_city = $_POST['product_city'];
     $stock = $_POST['stock'];
 
-    // Handle file upload
     $product_image = $product['product_image']; // Keep the current image by default
     if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] == 0) {
         $allowed = ['jpg', 'jpeg', 'png', 'gif'];
@@ -59,23 +77,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 }
                 $product_image = $new_file_name; // Use the new image file name
             } else {
-                echo "Failed to upload image.";
+                setFlashMessage('error', 'Failed to upload image.');
                 exit;
             }
         } else {
-            echo "Invalid file type or size. Allowed types: jpg, jpeg, png, gif. Max size: 2MB.";
+            setFlashMessage('error', 'Invalid file type or size. Allowed types: jpg, jpeg, png, gif. Max size: 2MB.');
             exit;
         }
     }
 
-    // Update product in the database
     $updated = updateProduct($product_id, $title, $price, $disc_price, $exp_date, $product_image, $product_city, $stock);
     if ($updated) {
-        echo "Product updated successfully.";
+        setFlashMessage('success', 'Product updated successfully.');
         // Refresh the product details after update
         $product = getProductById($product_id);
     } else {
-        echo "Failed to update product.";
+        setFlashMessage('error', 'Failed to update product.');
     }
 }
 ?>
@@ -115,9 +132,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <?php endif; ?>
         });
     </script>
+    <style>
+    .modal {
+        display: none; 
+        position: fixed; 
+        z-index: 1000; 
+        left: 0; 
+        top: 0; 
+        width: 100%; 
+        height: 100%; 
+        overflow: auto; 
+        background-color: rgba(0, 0, 0, 0.5); /* Dimmed background */
+    }
+    .modal-content {
+        background-color: #ffffff;
+        margin: 10% auto; /* Raise the modal a bit */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 90%; /* Responsive width */
+        max-width: 450px; /* Maximum width */
+        text-align: center;
+        border-radius: 8px; /* Rounded corners */
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Subtle shadow */
+    }
+    </style>
 </head>
 <body>
     <div class="container mx-auto px-4">
+        <?php displayFlashMessage(); ?>
         <div class="navbar bg-gray-800 flex justify-between items-center my-4 p-4 text-white">
             <a href="./index.php" class="text-blue-300 hover:text-blue-500"><i class="fas fa-store mr-2"></i>Market</a>
             <a href="./profile.php" class="text-blue-300 hover:text-blue-500 flex items-center">
@@ -161,5 +203,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </form>
         </div>
     </div>
+    <script>
+    function showFlashModal() {
+        ocument.getElementById('flash-modal').style.display = 'block';
+    }
+
+    function hideFlashModal() {
+        document.getElementById('flash-modal').style.display = 'none';
+    }
+    </script>
 </body>
 </html>

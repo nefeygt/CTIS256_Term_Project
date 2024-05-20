@@ -19,8 +19,6 @@ if (isset($_POST['product_id']) && isset($_POST['action'])) {
         if ($action === 'increase') {
             if ($_SESSION['cart'][$productId] < $product['stock']) {
                 $_SESSION['cart'][$productId]++;
-                echo "in stock if";
-
             }
         } elseif ($action === 'decrease') {
             if ($_SESSION['cart'][$productId] > 1) {
