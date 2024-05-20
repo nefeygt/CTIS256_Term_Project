@@ -2,7 +2,6 @@
 session_start();
 
 require "../db.php";
-
 if (isset($_POST['quantity']) && is_array($_POST['quantity'])) {
     foreach ($_POST['quantity'] as $productId => $quantity) {
         if (isset($_SESSION['cart'][$productId])) {
