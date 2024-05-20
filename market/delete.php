@@ -23,7 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $image_path = '../uploads/' . $product['product_image'];
 
         // Delete the product from the database
-        if (deleteProduct($id)) {
+        if (deleteProduct($id) == true) {
             // If the product is deleted successfully, delete the image file
             if (file_exists($image_path)) {
                 if (unlink($image_path)) {

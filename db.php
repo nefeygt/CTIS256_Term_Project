@@ -180,9 +180,13 @@ function deleteProduct($product_id) {
     global $db;
     $stmt = $db->prepare("DELETE FROM stocks WHERE product_id = ?");
     
-    $stmt->execute([$product_id]);
+    $res1 = $stmt->execute([$product_id]);
     $stmt = $db->prepare("DELETE FROM products WHERE product_id = ?");
-    $stmt->execute([$product_id]);
+    $res2 = $stmt->execute([$product_id]);
+    if ($res1 && $res2) {
+        return true;
+    }
+    return false;
 }
 
 function getProductById($product_id) {
