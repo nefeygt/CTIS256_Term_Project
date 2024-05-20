@@ -40,8 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $upload_path = $upload_dir . $new_file_name;
             if (move_uploaded_file($file_tmp, $upload_path)) {
                 // Insert new product into the database
-                
-                if (insertProduct($user['email'], $title, $price, $disc_price, $exp_date, $file_name, $product_city, $product_district, $stock)) {
+                if (insertProduct($user['email'], $title, $price, $disc_price, $exp_date, $new_file_name, $product_city, $product_district, $stock)) {
                     echo "Product added successfully.";
                 } else {
                     echo "Failed to add product.";
