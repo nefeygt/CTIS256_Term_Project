@@ -84,10 +84,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="text" id="district" name="district" value="<?= htmlspecialchars($district) ?>" class="w-full p-2 border border-gray-300 rounded">
                 </div>
                 <div>
-                    <button type="submit" class="bg-blue-500 hover bg-blue-700 text-white font-bold py-2 px-4 rounded">Update Profile</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</body>
-
+                    <button type="submit" class="bg-blue-500 hover

@@ -83,7 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <!-- Forms container -->
         <div id="formsContainer" class="transition-colors duration-300">
             <form id="marketForm" action="" method="post" class="hidden space-y-4">
-                <input type="hidden" name="userType" value="market" <?= $formData['userType'] == 'market' ? 'checked' : '' ?>>
+                <input type="hidden" name="userType" value="market">
                 <!-- Form fields with icons -->
                 <div class="relative">
                     <i class="fas fa-envelope absolute text-gray-400 left-3 top-3"></i>
@@ -150,18 +150,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="text" name="address" required placeholder="Address" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none" value="<?php echo $address; ?>">
                 </div>
                 <div class="relative">
-                <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
-                <input type="password" name="password" required placeholder="Password" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                    <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
+                    <input type="password" name="password" required placeholder="Password" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <div class="relative">
-                <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
-                <input type="password" name="passwordconfirm" required placeholder="Confirm Password" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                    <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
+                    <input type="password" name="passwordconfirm" required placeholder="Confirm Password" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">Register</button>
             </form>
-        </div>
-        <div class="text-center mt-6">
-            <p class="text-gray-600">Already have an account? <a href="login.php" class="text-blue-500 hover:underline">Log in here</a>.</p>
         </div>
     </div>
     <script>
@@ -170,7 +167,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             document.getElementById("customerForm").style.display = "none";
             document.getElementById("formsContainer").style.backgroundColor = '#e0f4ff';
         }
-        
+
         function showCustomerForm() {
             document.getElementById("marketForm").style.display = "none";
             document.getElementById("customerForm").style.display = "block";
