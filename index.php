@@ -3,7 +3,8 @@ session_start();
 require "db.php";
 
 if (isset($_SESSION['token'])) {
-    $user = getCustomerByToken($_SESSION['token']);
+    // Assuming you have a function to verify and get user data by token
+    $user = getCustomerByToken($_SESSION['token']); // Replace with your actual function
     if ($user != false) {
         header("Location: customer");
         exit;
@@ -68,10 +69,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.tailwindcss.com" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        .border-red-500 { border-color: #f56565; }
-        .text-red-500 { color: #f56565; }
-    </style>
 </head>
 <body class="bg-gray-50 flex items-center justify-center h-screen">
     <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
@@ -91,7 +88,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
         <!-- Forms container -->
         <div id="formsContainer" class="transition-colors duration-300">
-            <form id="marketForm" action="" method="post" class="hidden space-y-4" onsubmit="return validatePasswords('marketForm')">
+            <form id="marketForm" action="" method="post" class="hidden space-y-4">
                 <input type="hidden" name="userType" value="market" <?= $formData['userType'] == 'market' ? 'checked' : '' ?>>
                 <!-- Form fields with icons -->
                 <div class="relative">
@@ -120,13 +117,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <div class="relative">
                     <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
-                    <input type="password" name="passwordconfirm" id="marketPasswordConfirm" required placeholder="Confirm Password" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
-                    <p id="marketPasswordError" class="hidden text-red-500">Passwords do not match.</p>
+                    <input type="password" name="passwordconfirm" required placeholder="Confirm Password" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">Register</button>
             </form>
 
-            <form id="customerForm" action="" method="post" class="hidden space-y-4" onsubmit="return validatePasswords('customerForm')">
+            <form id="customerForm" action="" method="post" class="hidden space-y-4">
                 <input type="hidden" name="userType" value="customer" <?= $formData['userType'] == 'customer' ? 'checked' : '' ?>>
                 <!-- Form fields with icons -->
                 <div class="relative">
@@ -142,21 +138,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="text" name="city" required placeholder="City" value="<?= htmlspecialchars($formData['city']) ?>" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <div class="relative">
-                    <i class="fas fa-map-marker-alt absolute text-gray-400 left-3 top-3"></i>
-                    <input type="text" name="district" required placeholder="District" value="<?= htmlspecialchars($formData['district']) ?>" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                <i class="fas fa-map-marker-alt absolute text-gray-400 left-3 top-3"></i>
+                <input type="text" name="district" required placeholder="District" value="<?= htmlspecialchars($formData['district']) ?>" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <div class="relative">
-                    <i class="fas fa-home absolute text-gray-400 left-3 top-3"></i>
-                    <input type="text" name="address" required placeholder="Address" value="<?= htmlspecialchars($formData['address']) ?>" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                <i class="fas fa-home absolute text-gray-400 left-3 top-3"></i>
+                <input type="text" name="address" required placeholder="Address" value="<?= htmlspecialchars($formData['address']) ?>" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <div class="relative">
-                    <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
-                    <input type="password" name="password" required placeholder="Password" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
+                <input type="password" name="password" required placeholder="Password" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <div class="relative">
-                    <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
-                    <input type="password" name="passwordconfirm" id="customerPasswordConfirm" required placeholder="Confirm Password" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
-                    <p id="customerPasswordError" class="hidden text-red-500">Passwords do not match.</p>
+                <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
+                <input type="password" name="passwordconfirm" required placeholder="Confirm Password" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">Register</button>
             </form>
@@ -176,25 +171,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             document.getElementById("marketForm").style.display = "none";
             document.getElementById("customerForm").style.display = "block";
             document.getElementById("formsContainer").style.backgroundColor = '#e0ffe8';
-        }
-
-        function validatePasswords(formId) {
-            const form = document.getElementById(formId);
-            const password = form.querySelector('input[name="password"]').value;
-            const confirmPassword = form.querySelector('input[name="passwordconfirm"]').value;
-            const confirmPasswordInput = form.querySelector('input[name="passwordconfirm"]');
-            const passwordError = form.querySelector('p[id*="PasswordError"]');
-
-            if (password !== confirmPassword) {
-                confirmPasswordInput.classList.add("border-red-500");
-                passwordError.classList.remove("hidden");
-                confirmPasswordInput.focus();
-                return false;
-            } else {
-                confirmPasswordInput.classList.remove("border-red-500");
-                passwordError.classList.add("hidden");
-            }
-            return true;
         }
     </script>
 </body>

@@ -1,7 +1,7 @@
 <?php
 
 // Database connection constants
-const DSN = "mysql:host=localhost;dbname=test;charset=utf8mb4";
+const DSN = "mysql:host=localhost;dbname=256_project;charset=utf8mb4";
 const USER = "root";
 const PASSWORD = "";
 
@@ -99,11 +99,7 @@ function setTokenByEmail($email, $token) {
 function storeInTemporaryTable($email, $password, $token, $name, $city, $district, $address, $userType) {
     global $db;
     $stmt = $db->prepare("insert into temp (email, password, token, name, city, district, address, type) values (?, ?, ?, ?, ?, ?, ?, ?)");
-    try {
-        $stmt->execute([$email, $password, $token, $name, $city, $district, $address, $userType]);
-    } catch (\Throwable $th) {
-        echo "error";
-    }
+    $stmt->execute([$email, $password, $token, $name, $city, $district, $address, $userType]);
 }
 
 // Save user from temporary table to respective table
@@ -313,4 +309,21 @@ function buyItem($product_id, $quantity) {
     $stmt = $db->prepare("UPDATE stocks SET stock = stock - ? WHERE product_id = ?");
     $stmt->execute([$quantity, $product_id]);
     return true;
+}
+
+function isExpired($pid) {
+
+    $prd = getProductById($pid);
+    $expd = $prd['product_exp_date'];
+    $now = new DateTime();
+    
+    $expdDate = new DateTime($expd);
+    
+    if ($expdDate < $now) {
+        return true; 
+    } else {
+        return false; 
+    }
+    
+
 }

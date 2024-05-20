@@ -2,51 +2,32 @@
 require "../db.php";
 session_start();
 
-function setFlashMessage($type, $message) {
-    $_SESSION['flash'] = ['type' => $type, 'message' => $message];
-}
-
-function displayFlashMessage() {
-    if (isset($_SESSION['flash'])) {
-        $flash = $_SESSION['flash'];
-        $class = $flash['type'] === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
-        echo "<div id='flash-modal' class='modal' style='display: block;'>
-                <div class='modal-content {$class}'>
-                    <p>{$flash['message']}</p>
-                    <button onclick='hideFlashModal()' class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>Close</button>
-                </div>
-              </div>";
-        unset($_SESSION['flash']); // Clear the flash message after displaying
-    }
-}
-
 if (!isset($_SESSION['token'])) {
-    setFlashMessage('error', 'You are not logged in. Please login to continue.');
-    header("Location: login.php");
+    header("Location: login.php"); // Redirect to login if not authenticated
     exit;
 }
 
 $user = getMarketByToken($_SESSION['token']);
 if ($user == false) {
-    setFlashMessage('error', 'Invalid session. Please re-login.');
-    header("Location: login.php");
+    echo "Invalid session. Please re-login.";
     exit;
 }
 
-$product_id = $_GET['id'] ?? null;
+// Check for product ID
+$product_id = isset($_GET['id']) ? $_GET['id'] : null;
 if (!$product_id) {
-    setFlashMessage('error', 'Product ID is required.');
-    header("Location: index.php"); // Redirect to a safe page
+    echo "Product ID is required.";
     exit;
 }
 
+// Fetch product details
 $product = getProductById($product_id);
 if (!$product) {
-    setFlashMessage('error', 'Product not found.');
-    header("Location: index.php"); // Redirect to a safe page
+    echo "Product not found.";
     exit;
 }
 
+// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $title = $_POST['title'];
     $price = $_POST['price'];
@@ -55,44 +36,46 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $product_city = $_POST['product_city'];
     $stock = $_POST['stock'];
 
+    // Handle file upload
     $product_image = $product['product_image']; // Keep the current image by default
     if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] == 0) {
-        // Delete the previous image if it exists
-        $upload_dir = '../uploads/';
-        $previous_image = $upload_dir . $product['product_image'];
-        if ($product['product_image'] && file_exists($previous_image)) {
-            unlink($previous_image);
-        }
-    
         $allowed = ['jpg', 'jpeg', 'png', 'gif'];
         $file_name = $_FILES['product_image']['name'];
         $file_tmp = $_FILES['product_image']['tmp_name'];
         $file_size = $_FILES['product_image']['size'];
         $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
-    
+
         if (in_array($file_ext, $allowed) && $file_size <= 2097152) { // 2MB file size limit
             $new_file_name = uniqid() . '.' . $file_ext;
+            $upload_dir = '../uploads/';
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
             $upload_path = $upload_dir . $new_file_name;
             if (move_uploaded_file($file_tmp, $upload_path)) {
+                // Remove the old image file if a new image is uploaded
+                if ($product['product_image'] && file_exists($upload_dir . $product['product_image'])) {
+                    unlink($upload_dir . $product['product_image']);
+                }
                 $product_image = $new_file_name; // Use the new image file name
             } else {
-                setFlashMessage('error', 'Failed to upload image.');
+                echo "Failed to upload image.";
                 exit;
             }
         } else {
-            setFlashMessage('error', 'Invalid file type or size. Allowed types: jpg, jpeg, png, gif. Max size: 2MB.');
+            echo "Invalid file type or size. Allowed types: jpg, jpeg, png, gif. Max size: 2MB.";
             exit;
         }
     }
-    
 
+    // Update product in the database
     $updated = updateProduct($product_id, $title, $price, $disc_price, $exp_date, $product_image, $product_city, $stock);
     if ($updated) {
-        setFlashMessage('success', 'Product updated successfully.');
+        echo "Product updated successfully.";
         // Refresh the product details after update
         $product = getProductById($product_id);
     } else {
-        setFlashMessage('error', 'Failed to update product.');
+        echo "Failed to update product.";
     }
 }
 ?>
@@ -132,34 +115,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <?php endif; ?>
         });
     </script>
-    <style>
-    .modal {
-        display: none; 
-        position: fixed; 
-        z-index: 1000; 
-        left: 0; 
-        top: 0; 
-        width: 100%; 
-        height: 100%; 
-        overflow: auto; 
-        background-color: rgba(0, 0, 0, 0.5); /* Dimmed background */
-    }
-    .modal-content {
-        background-color: #ffffff;
-        margin: 10% auto; /* Raise the modal a bit */
-        padding: 20px;
-        border: 1px solid #888;
-        width: 90%; /* Responsive width */
-        max-width: 450px; /* Maximum width */
-        text-align: center;
-        border-radius: 8px; /* Rounded corners */
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Subtle shadow */
-    }
-    </style>
 </head>
 <body>
     <div class="container mx-auto px-4">
-        <?php displayFlashMessage(); ?>
         <div class="navbar bg-gray-800 flex justify-between items-center my-4 p-4 text-white">
             <a href="./index.php" class="text-blue-300 hover:text-blue-500"><i class="fas fa-store mr-2"></i>Market</a>
             <a href="./profile.php" class="text-blue-300 hover:text-blue-500 flex items-center">
@@ -192,14 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
                 <div class="mb-4">
                     <label for="product_image" class="block text-sm font-medium text-gray-700">Product Image</label>
-                    <?php if ($product['product_image']) : ?>
-                        <!-- Display the current image if it exists -->
-                        <img id="imagePreview" src="../uploads/<?= htmlspecialchars($product['product_image']) ?>" alt="Current Image" class="mb-4 max-w-xs">
-                    <?php else: ?>
-                        <!-- Display a placeholder if no image exists -->
-                        <div id="imagePreview" class="mb-4 max-w-xs" style="display: none;"></div>
-                    <?php endif; ?>
-                    <!-- Input field for uploading a new image -->
+                    <img id="imagePreview" src="#" alt="Product Image" class="mb-4 max-w-xs" style="display: none;" />
                     <input type="file" id="product_image" name="product_image" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" onchange="previewImage(event)">
                 </div>
                 <div class="mb-4">
@@ -210,14 +161,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </form>
         </div>
     </div>
-    <script>
-    function showFlashModal() {
-        document.getElementById('flash-modal').style.display = 'block';
-    }
-
-    function hideFlashModal() {
-        document.getElementById('flash-modal').style.display = 'none';
-    }
-    </script>
 </body>
 </html>
