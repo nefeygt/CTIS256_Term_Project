@@ -99,7 +99,11 @@ function setTokenByEmail($email, $token) {
 function storeInTemporaryTable($email, $password, $token, $name, $city, $district, $address, $userType) {
     global $db;
     $stmt = $db->prepare("insert into temp (email, password, token, name, city, district, address, type) values (?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$email, $password, $token, $name, $city, $district, $address, $userType]);
+    try {
+        $stmt->execute([$email, $password, $token, $name, $city, $district, $address, $userType]);
+    } catch (\Throwable $th) {
+        echo "error";
+    }
 }
 
 // Save user from temporary table to respective table
