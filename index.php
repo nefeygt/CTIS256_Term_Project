@@ -1,58 +1,54 @@
 <?php
-session_start();
-require "db.php";
+    session_start();
+    require "db.php";
 
-if (isset($_SESSION['token'])) {
-    // Assuming you have a function to verify and get user data by token
-    $user = getCustomerByToken($_SESSION['token']); // Replace with your actual function
-    if ($user) {
-        header("Location: " . $user['userType']);
-        exit;
-    }
-    $user = getMarketByToken($_SESSION['token']);
-    if ($user) {
-        header("Location: " . $user['userType']);
-        exit;
-    }
-}
-
-$error = '';
-// Initialize variables to retain form data
-$email = $name = $city = $district = $address = '';
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $userType = htmlspecialchars($_POST['userType']);
-    $_SESSION["userType"] = $userType;
-    // Populate variables with submitted form data
-    $email = filter_var($_POST["email"], FILTER_SANITIZE_EMAIL);
-    $name = htmlspecialchars($_POST["name"]);
-    $city = htmlspecialchars($_POST["city"]);
-    $district = htmlspecialchars($_POST["district"]);
-    $address = htmlspecialchars($_POST["address"]);
-    
-    if ($_POST["password"] != $_POST["passwordconfirm"]) {
-        $error = "Passwords do not match.";
-    } else {
-        $password = $_POST["password"];
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-        $token = bin2hex(random_bytes(16));
-
-        $_SESSION["email"] = $email;
-        $_SESSION["token"] = $token;
-
-        if ($userType == "market" && !checkMarketExists($email)) {
-            storeInTemporaryTable($email, $hashed_password, $token, $name, $city, $district, $address, $userType);
-            header("Location: verify.php");
+    if(isset($_SESSION['token'])) {
+        // Assuming you have a function to verify and get user data by token
+        $user = getCustomerByToken($_SESSION['token']); // Replace with your actual function
+        if ($user) {
+            header("Location: " . $user['userType']);
             exit;
-        } elseif ($userType == "customer" && !checkCustomerExists($email)) {
-            storeInTemporaryTable($email, $hashed_password, $token, $name, $city, $district, $address, $userType);
-            header("Location: verify.php");
+        }
+        $user = getMarketByToken($_SESSION['token']);
+        if ($user) {
+            header("Location: " . $user['userType']);
             exit;
-        } else {
-            $error = "User already exists.";
         }
     }
-}
+
+    $error = '';
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        $userType = htmlspecialchars($_POST['userType']);
+        $_SESSION["userType"] = $userType;
+        $email = filter_var($_POST["email"], FILTER_SANITIZE_EMAIL);
+        
+        if ($_POST["password"] != $_POST["passwordconfirm"]) {
+            $error = "Passwords do not match.";
+        } else {
+            $password = $_POST["password"];
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            $token = bin2hex(random_bytes(16));
+
+            $name = htmlspecialchars($_POST["name"]);
+            $city = htmlspecialchars($_POST["city"]);
+            $district = htmlspecialchars($_POST["district"]);
+            $address = htmlspecialchars($_POST["address"]);
+            $_SESSION["email"] = $email;
+            $_SESSION["token"] = $token;
+
+            if ($userType == "market" && !checkMarketExists($email)) {
+                storeInTemporaryTable($email, $hashed_password, $token, $name, $city, $district, $address, $userType);
+                header("Location: verify.php");
+                exit;
+            } elseif ($userType == "customer" && !checkCustomerExists($email)) {
+                storeInTemporaryTable($email, $hashed_password, $token, $name, $city, $district, $address, $userType);
+                header("Location: verify.php");
+                exit;
+            } else {
+                $error = "User already exists.";
+            }
+        }
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -87,28 +83,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <!-- Form fields with icons -->
                 <div class="relative">
                     <i class="fas fa-envelope absolute text-gray-400 left-3 top-3"></i>
-                    <!-- Added value attribute to retain email -->
-                    <input type="email" name="email" required placeholder="Email" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none" value="<?php echo $email; ?>">
+                    <input type="email" name="email" required placeholder="Email" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <div class="relative">
                     <i class="fas fa-tag absolute text-gray-400 left-3 top-3"></i>
-                    <!-- Added value attribute to retain market name -->
-                    <input type="text" name="name" required placeholder="Market Name" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none" value="<?php echo $name; ?>">
+                    <input type="text" name="name" required placeholder="Market Name" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <div class="relative">
                     <i class="fas fa-city absolute text-gray-400 left-3 top-3"></i>
-                    <!-- Added value attribute to retain city -->
-                    <input type="text" name="city" required placeholder="City" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none" value="<?php echo $city; ?>">
+                    <input type="text" name="city" required placeholder="City" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <div class="relative">
                     <i class="fas fa-map-marker-alt absolute text-gray-400 left-3 top-3"></i>
-                    <!-- Added value attribute to retain district -->
-                    <input type="text" name="district" required placeholder="District" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none" value="<?php echo $district; ?>">
+                    <input type="text" name="district" required placeholder="District" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <div class="relative">
                     <i class="fas fa-home absolute text-gray-400 left-3 top-3"></i>
-                    <!-- Added value attribute to retain address -->
-                    <input type="text" name="address" required placeholder="Address" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none" value="<?php echo $address; ?>">
+                    <input type="text" name="address" required placeholder="Address" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <div class="relative">
                     <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
@@ -122,32 +113,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </form>
 
             <form id="customerForm" action="" method="post" class="hidden space-y-4">
-                <input type="hidden" name="userType" value="customer">
+            <input type="hidden" name="userType" value="customer">
                 <!-- Form fields with icons -->
                 <div class="relative">
                     <i class="fas fa-envelope absolute text-gray-400 left-3 top-3"></i>
-                    <!-- Added value attribute to retain email -->
-                    <input type="email" name="email" required placeholder="Email" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none" value="<?php echo $email; ?>">
+                    <input type="email" name="email" required placeholder="Email" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <div class="relative">
                     <i class="fas fa-tag absolute text-gray-400 left-3 top-3"></i>
-                    <!-- Added value attribute to retain full name -->
-                    <input type="text" name="name" required placeholder="Full Name" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none" value="<?php echo $name; ?>">
+                    <input type="text" name="name" required placeholder="Full Name" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <div class="relative">
                     <i class="fas fa-city absolute text-gray-400 left-3 top-3"></i>
-                    <!-- Added value attribute to retain city -->
-                    <input type="text" name="city" required placeholder="City" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none" value="<?php echo $city; ?>">
+                    <input type="text" name="city" required placeholder="City" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <div class="relative">
                     <i class="fas fa-map-marker-alt absolute text-gray-400 left-3 top-3"></i>
-                    <!-- Added value attribute to retain district -->
-                    <input type="text" name="district" required placeholder="District" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none" value="<?php echo $district; ?>">
+                    <input type="text" name="district" required placeholder="District" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <div class="relative">
                     <i class="fas fa-home absolute text-gray-400 left-3 top-3"></i>
-                    <!-- Added value attribute to retain address -->
-                    <input type="text" name="address" required placeholder="Address" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none" value="<?php echo $address; ?>">
+                    <input type="text" name="address" required placeholder="Address" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <div class="relative">
                     <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
@@ -173,13 +159,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             document.getElementById("customerForm").style.display = "block";
             document.getElementById("formsContainer").style.backgroundColor = '#e0ffe8';
         }
-
-        // To show the form if the user has already selected a form before submitting
-        <?php if ($_SERVER["REQUEST_METHOD"] == "POST" && $userType == "market") : ?>
-            showMarketForm();
-        <?php elseif ($_SERVER["REQUEST_METHOD"] == "POST" && $userType == "customer") : ?>
-            showCustomerForm();
-        <?php endif; ?>
     </script>
 </body>
 </html>

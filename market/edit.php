@@ -13,7 +13,6 @@ if (!$user) {
     exit;
 }
 
-$title=$price=$disc_price=$exp_date=$product_image=$product_city=$stock='';
 // Check for product ID
 $product_id = isset($_GET['id']) ? $_GET['id'] : null;
 if (!$product_id) {

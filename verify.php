@@ -4,7 +4,7 @@
 
     // Start the session
     session_start();
-    $verificationCode='';
+
     // Check if the session variables are set
     if (!isset($_SESSION["token"]) || !isset($_SESSION["email"])) {
         emptyTempTable();
@@ -61,9 +61,6 @@
     else {
         exit("Invalid request.");
     }
-
-    if(isset($_POST['code']))
-    $verificationCode=htmlspecialchars($_POST['code']);
 ?>
 
 <!DOCTYPE html>
