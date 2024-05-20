@@ -3,7 +3,6 @@
 session_start();
 require "../db.php";
 
-var_dump($_SESSION);
 
 if(!isset($_SESSION['token'])) {
     header("Location: ../login.php"); // Redirect to login if not authenticated
@@ -88,7 +87,7 @@ $pages = ceil($total / $perPage);
                     <td class="py-3 px-6 text-center">
                         <form action="add_to_cart.php" method="post">
                             <input type="hidden" name="product_id" value="<?= $product['product_id'] ?>">
-                            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded">Add to Cart</button>
+                            <button class="add-to-cart bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded">Add to Cart</button>
                         </form>
                     </td>
                 </tr>
@@ -109,5 +108,12 @@ $pages = ceil($total / $perPage);
             cartPopup.classList.toggle('hidden');
         }
     </script>
+
+    <form action="update_cart.php" method="post">
+        <input type="hidden" name="">
+        <button type="submit" name="increase_prd" style="color: greenyellow">+</button>
+        <button type="submit" name="decrease_prd" style="color: red">-</button>
+    </form>
+
 </body>
 </html>
