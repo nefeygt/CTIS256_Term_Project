@@ -19,10 +19,11 @@ if (!$marketInfo) {
 }
 
 // Access individual fields
-$name = htmlspecialchars($marketInfo['market_name']);
+$name = htmlspecialchars($marketInfo['name']);
 $address = htmlspecialchars($marketInfo['address']);
 $city = htmlspecialchars($marketInfo['city']);
 $district = htmlspecialchars($marketInfo['district']);
+$password = htmlspecialchars($marketInfo['password']);
 ?>
 
 <!DOCTYPE html>

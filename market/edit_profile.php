@@ -18,7 +18,11 @@ if (!$marketInfo) {
     exit;
 }
 
-$email = $marketInfo['email'];
+// Initialize variables
+$name = $marketInfo['name'];
+$address = $marketInfo['address'];
+$city = $marketInfo['city'];
+$district = $marketInfo['district'];
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -27,22 +31,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $address = htmlspecialchars($_POST['address']);
     $city = htmlspecialchars($_POST['city']);
     $district = htmlspecialchars($_POST['district']);
-
+    
     // Update the market information in the database
-    $res = updateMarketUser($name, $address, $city, $district, $email);
-    if ($res === true) {
+    $stmt = $db->prepare("UPDATE market_user SET name = ?, address = ?, city = ?, district = ? WHERE email = ?");
+    if ($stmt->execute([$name, $address, $city, $district, $email])) {
         echo "Profile updated successfully.";
+        // Optionally, redirect to profile page after updating
+        // header("Location: profile.php");
+        // exit;
     } else {
         echo "Error updating profile.";
     }
 }
-
-
-// Initialize variables
-$name = $marketInfo['market_name'];
-$address = $marketInfo['address'];
-$city = $marketInfo['city'];
-$district = $marketInfo['district']; 
 ?>
 
 <!DOCTYPE html>
@@ -61,7 +61,7 @@ $district = $marketInfo['district'];
             <a href="./index.php" class="text-blue-300 hover:text-blue-500"><i class="fas fa-store mr-2"></i>Market</a>
             <a href="./profile.php" class="text-blue-300 hover:text-blue-500 flex items-center">
                 <i class="fas fa-user-circle mr-2"></i>
-                <?= htmlspecialchars($marketInfo['market_name']) ?>
+                <?= htmlspecialchars($marketInfo['name']) ?>
             </a>
         </div>
         <div class="mb-4">
@@ -90,3 +90,4 @@ $district = $marketInfo['district'];
         </div>
     </div>
 </body>
+

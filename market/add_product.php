@@ -12,7 +12,7 @@ if ($user == false) {
     echo "Invalid session. Please re-login.";
     exit;
 }
-
+$title = $price = $disc_price = $exp_date = $product_image = $product_city = $stock = '';
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $title = $_POST['title'];
@@ -89,40 +89,41 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
         <div class="mb-4 mt-8">
             <h2 class="text-xl font-semibold">Add New Product</h2>
-            <form action="" method="post" enctype="multipart/form-data" class="mt-4">
-                <div class="mb-4">
-                    <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
-                    <input type="text" id="title" name="title" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                </div>
+            <form action="" method="post" class="mt-4">
+            <div class="mb-4">
+                <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+                <input type="text" id="title" name="title" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" value="<?= htmlspecialchars($title)?>">
+            </div>
 
-                <div class="mb-4">
-                    <label for="stock" class="block text-sm font-medium text-gray-700">Stock</label>
-                    <input type="number" id="stock" name="stock" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                </div>
+            <div class="mb-4">
+                <label for="stock" class="block text-sm font-medium text-gray-700">Stock</label>
+                <input type="number" id="stock" name="stock" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" value="<?= htmlspecialchars($number)?>">
+            </div>
 
-                <div class="mb-4">
-                    <label for="price" class="block text-sm font-medium text-gray-700">Price</label>
-                    <input type="text" id="price" name="price" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                </div>
+            <div class="mb-4">
+                <label for="price" class="block text-sm font-medium text-gray-700">Price</label>
+                <input type="text" id="price" name="price" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" value="<?= htmlspecialchars($price)?>">
+            </div>
 
-                <div class="mb-4">
-                    <label for="disc_price" class="block text-sm font-medium text-gray-700">Discounted Price</label>
-                    <input type="text" id="disc_price" name="disc_price" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                </div>
+            <div class="mb-4">
+                <label for="disc_price" class="block text-sm font-medium text-gray-700">Discounted Price</label>
+                <input type="text" id="disc_price" name="disc_price" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" value="<?= htmlspecialchars($disc_price)?>">
+            </div>
 
-                <div class="mb-4">
-                    <label for="exp_date" class="block text-sm font-medium text-gray-700">Expiration Date</label>
-                    <input type="date" id="exp_date" name="exp_date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                </div>
+            <div class="mb-4">
+                <label for="exp_date" class="block text-sm font-medium text-gray-700">Expiration Date</label>
+                <input type="date" id="exp_date" name="exp_date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" value="<?= htmlspecialchars($exp_date)?>">
+            </div>
 
-                <div class="mb-4">
-                    <label for="product_image" class="block text-sm font-medium text-gray-700">Product Image</label>
-                    <input type="file" id="product_image" name="product_image" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" onchange="previewImage(event)">
-                </div>
+            <div class="mb-4">
+                <label for="product_image" class="block text-sm font-medium text-gray-700">Product Image</label>
+                <input type="text" id="product_image" name="product_image" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" value="<?= htmlspecialchars($product_image)?>">
+            </div>
 
-                <div class="mb-4">
-                    <img id="imagePreview" src="#" alt="Image Preview" style="display: none; max-height: 200px; max-width: 100%;" />
-                </div>
+            <div class="mb-4">
+                <label for="product_city" class="block text-sm font-medium text-gray-700">Product City</label>
+                <input type="text" id="product_city" name="product_city" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" value="<?= htmlspecialchars($product_city)?>">
+            </div>
 
                 <div class="mb-4">
                     <label for="product_city" class="block text-sm font-medium text-gray-700">Product City</label>

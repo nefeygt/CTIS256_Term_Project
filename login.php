@@ -1,6 +1,8 @@
 <?php
 session_start();
 require "db.php";
+$email=$userType='';
+$errorMessage='';
 
 if (isset($_SESSION['token'])) {
     // Assuming you have a function to verify and get user data by token
@@ -62,7 +64,7 @@ if (isset($_POST['login'])) {
         <form action="" method="post" class="space-y-4">
             <div class="relative">
                 <i class="fas fa-envelope absolute text-gray-400 left-3 top-3"></i>
-                <input type="email" name="email" required placeholder="Email" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                <input type="email" name="email" required placeholder="Email" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none" value="<?= htmlspecialchars($email)?>">
             </div>
             <div class="relative">
                 <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
@@ -71,9 +73,12 @@ if (isset($_POST['login'])) {
             <div class="relative">
                 <select name="userType" required class="w-full pl-3 pr-10 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                     <option value="">Select User Type</option>
-                    <option value="customer">Customer</option>
-                    <option value="market">Market</option>
+                    <option value="customer" <?=($userType==='customer')? 'selected': '' ?>>Customer</option>
+                    <option value="market"  <?=($userType==='market')? 'selected': '' ?>>Market</option>
                 </select>
+                <?php if (!empty($errorMessage)): ?>
+                    <p class="text-red 500"><?php echo $errorMessage; ?></p>
+                <?php endif; ?>
             </div>
             <button type="submit" name="login" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">Log In</button>
         </form>
