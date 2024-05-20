@@ -314,3 +314,20 @@ function buyItem($product_id, $quantity) {
     $stmt->execute([$quantity, $product_id]);
     return true;
 }
+
+function isExpired($pid) {
+
+    $prd = getProductById($pid);
+    $expd = $prd['product_exp_date'];
+    $now = new DateTime();
+    
+    $expdDate = new DateTime($expd);
+    
+    if ($expdDate < $now) {
+        return true; 
+    } else {
+        return false; 
+    }
+    
+
+}

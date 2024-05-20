@@ -57,23 +57,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $product_image = $product['product_image']; // Keep the current image by default
     if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] == 0) {
-        // Delete the previous image if it exists
-        $upload_dir = '../uploads/';
-        $previous_image = $upload_dir . $product['product_image'];
-        if ($product['product_image'] && file_exists($previous_image)) {
-            unlink($previous_image);
-        }
-    
         $allowed = ['jpg', 'jpeg', 'png', 'gif'];
         $file_name = $_FILES['product_image']['name'];
         $file_tmp = $_FILES['product_image']['tmp_name'];
         $file_size = $_FILES['product_image']['size'];
         $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
-    
+
         if (in_array($file_ext, $allowed) && $file_size <= 2097152) { // 2MB file size limit
             $new_file_name = uniqid() . '.' . $file_ext;
+            $upload_dir = '../uploads/';
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
             $upload_path = $upload_dir . $new_file_name;
             if (move_uploaded_file($file_tmp, $upload_path)) {
+                // Remove the old image file if a new image is uploaded
+                if ($product['product_image'] && file_exists($upload_dir . $product['product_image'])) {
+                    unlink($upload_dir . $product['product_image']);
+                }
                 $product_image = $new_file_name; // Use the new image file name
             } else {
                 setFlashMessage('error', 'Failed to upload image.');
@@ -84,7 +85,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             exit;
         }
     }
-    
 
     $updated = updateProduct($product_id, $title, $price, $disc_price, $exp_date, $product_image, $product_city, $stock);
     if ($updated) {
@@ -192,14 +192,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
                 <div class="mb-4">
                     <label for="product_image" class="block text-sm font-medium text-gray-700">Product Image</label>
-                    <?php if ($product['product_image']) : ?>
-                        <!-- Display the current image if it exists -->
-                        <img id="imagePreview" src="../uploads/<?= htmlspecialchars($product['product_image']) ?>" alt="Current Image" class="mb-4 max-w-xs">
-                    <?php else: ?>
-                        <!-- Display a placeholder if no image exists -->
-                        <div id="imagePreview" class="mb-4 max-w-xs" style="display: none;"></div>
-                    <?php endif; ?>
-                    <!-- Input field for uploading a new image -->
+                    <img id="imagePreview" src="#" alt="Product Image" class="mb-4 max-w-xs" style="display: none;" />
                     <input type="file" id="product_image" name="product_image" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" onchange="previewImage(event)">
                 </div>
                 <div class="mb-4">
@@ -212,7 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
     <script>
     function showFlashModal() {
-        document.getElementById('flash-modal').style.display = 'block';
+        ocument.getElementById('flash-modal').style.display = 'block';
     }
 
     function hideFlashModal() {

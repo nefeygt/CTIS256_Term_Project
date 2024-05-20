@@ -1,39 +1,17 @@
 <?php
+
 session_start();
 require "../db.php";
 
-function setFlashMessage($type, $message) {
-    $_SESSION['flash'] = ['type' => $type, 'message' => $message];
-}
 
-function displayFlashMessage() {
-    if (isset($_SESSION['flash'])) {
-        $flash = $_SESSION['flash'];
-        $class = $flash['type'] === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
-        echo "<div id='flash-modal' class='modal'>
-                <div class='modal-content {$class}'>
-                    <p>{$flash['message']}</p>
-                    <button onclick='hideFlashModal()' class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>Close</button>
-                </div>
-              </div>";
-        unset($_SESSION['flash']); // Clear the flash message after displaying
-    }
-}
-
-function hideFlashModal() {
-    echo "<script>document.getElementById('flash-modal').style.display = 'none';</script>";
-}
-
-if (!isset($_SESSION['token'])) {
-    setFlashMessage('error', 'You are not logged in. Please login to continue.');
-    header("Location: ../login.php");
+if(!isset($_SESSION['token'])) {
+    header("Location: ../login.php"); // Redirect to login if not authenticated
     exit;
 }
 
 $user = getCustomerByToken($_SESSION['token']);
 if ($user == false) {
-    setFlashMessage('error', 'Invalid session. Please re-login.');
-    header("Location: ../login.php");
+    echo "Invalid session. Please re-login.";
     exit;
 }
 
@@ -45,6 +23,7 @@ $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $start = ($page - 1) * $perPage;
 $products = array_slice($products, $start, $perPage);
 $pages = ceil($total / $perPage);
+
 ?>
 
 <!DOCTYPE html>
@@ -90,27 +69,17 @@ $pages = ceil($total / $perPage);
         #logoutModal {
             display: none;
         }
-
-        .cart-icon {
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .cart-icon:hover {
-            background-color: #f0f0f0; /* Change this to your preferred color */
-        }
     </style>
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto px-4">
-        <?php displayFlashMessage(); ?>
         <div class="navbar bg-gray-800 flex justify-between items-center my-4 p-4 text-white">
             <a href="./index.php" class="text-blue-300 hover:text-blue-500">Home</a>
             <a href="./profile.php" class="text-blue-300 hover:text-blue-500"><?= htmlspecialchars($user['name']) ?></a>
             <button onclick="showLogoutModal()" class="text-red-300 hover:text-red-500 ml-4">Logout</button>
             <div class="relative">
                 <div class="cart-icon" onclick="toggleCart()">🛒</div>
-                <div class="cart-popup hidden absolute right-0 w-300 bg-white shadow-lg p-4">
+                <div class="cart-popup <?= isset($_SESSION['show_popup']) && !empty($_SESSION['show_popup']) ? '' : 'hidden' ?> absolute right-0 w-300 bg-white shadow-lg p-4">
                     <?php include 'cart_popup.php'; ?>
                 </div>
             </div>
@@ -119,6 +88,7 @@ $pages = ceil($total / $perPage);
             <input type="text" placeholder="Search products..." class="border p-2 w-full" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-2">Search</button>
         </form>
+        <?php if(!empty($products)):  ?>
         <table class="table-auto w-full mb-4 bg-white rounded shadow">
             <thead class="bg-gray-200 text-gray-600">
                 <tr>
@@ -135,21 +105,24 @@ $pages = ceil($total / $perPage);
             <tbody>
                 <?php foreach ($products as $product): ?>
                 <tr class="border-b border-gray-200 hover:bg-gray-100">
+                    <?=$exp = isExpired($product['product_id'])?>
                     <td class="py-3 px-6"><?= htmlspecialchars($product['product_title']) ?></td>
                     <td class="py-3 px-6"><?= htmlspecialchars($product['stock']) ?></td>
-                    <td class="py-3 px-6"><?= htmlspecialchars($product['product_price']) ?></td>
-                    <td class="py-3 px-6"><?= htmlspecialchars($product['product_disc_price']) ?></td>
+                    <td class="py-3 px-6" style="text-decoration:<?= $exp ? '' : 'underline'?>" ><?= htmlspecialchars($product['product_price']) ?></td>
+                    <td class="py-3 px-6" style="text-decoration:<?= $exp ? 'underline' : ''?>" ><?= htmlspecialchars($product['product_disc_price']) ?></td>
                     <td class="py-3 px-6"><?= htmlspecialchars($product['product_exp_date']) ?></td>
                     <td class="py-3 px-6"><?= htmlspecialchars($product['product_city']) ?></td>
                     <td class="py-3 px-6"><?= htmlspecialchars($product['product_district']) ?></td>
                     <td class="py-3 px-6 text-center">
-                        <form action="add_to_cart.php" method="post">
+                        <form action="add_to_cart.php?pg=<?=$page?>" method="post">
                             <input type="hidden" name="product_id" value="<?= $product['product_id'] ?>">
                             <button class="add-to-cart bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded">Add to Cart</button>
                         </form>
                     </td>
                 </tr>
-                <?php endforeach; ?>
+                <?php endforeach; else:?>
+                <h1 style="color:red; text-align:center; margin-top:150px;" ><b>There is no product with the pattern '<?=$search?>'</b></h1>
+                <?php endif;?>
             </tbody>
         </table>
         <nav class="flex justify-center">
@@ -188,12 +161,10 @@ $pages = ceil($total / $perPage);
             window.location.href = '../logout.php';
         }
     </script>
-
-    <form action="update_cart.php" method="post">
-        <input type="hidden" name="">
-        <button type="submit" name="increase_prd" style="color: greenyellow">+</button>
-        <button type="submit" name="decrease_prd" style="color: red">-</button>
-    </form>
-
 </body>
 </html>
+
+<?php 
+$showPopup = isset($_SESSION['show_popup']) ? $_SESSION['show_popup'] : false;
+unset($_SESSION['show_popup']);
+?>

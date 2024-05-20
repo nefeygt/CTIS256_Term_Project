@@ -19,6 +19,8 @@ if (isset($_POST['product_id']) && isset($_POST['action'])) {
         if ($action === 'increase') {
             if ($_SESSION['cart'][$productId] < $product['stock']) {
                 $_SESSION['cart'][$productId]++;
+                echo "in stock if";
+
             }
         } elseif ($action === 'decrease') {
             if ($_SESSION['cart'][$productId] > 1) {
@@ -27,6 +29,10 @@ if (isset($_POST['product_id']) && isset($_POST['action'])) {
         }
     }
 }
+
+session_start();
+
+$_SESSION['show_popup'] = true;
 
 header('Location: index.php');
 exit;

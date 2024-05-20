@@ -8,7 +8,7 @@ echo "<div class='max-w-lg mx-auto bg-white p-4 shadow rounded' style='width: 35
 // Display the cart items
 if (!empty($_SESSION['cart'])) {
     // var_dump($_SESSION["cart"]);
-    echo "<h1 style='background-color:powderblue; width: max-content; padding:10px; border-radius:25px; margin-bottom:10px;'>Shopping Cart</h1>";
+    echo "<h1 style='background-color:blue; width: max-content; padding:10px; border-radius:25px; margin-bottom:10px;'><b>Shopping Cart</b></h1>";
     echo "<hr>";
     echo "<ul>";
     foreach ($_SESSION['cart'] as $productId => $quantity) {
@@ -38,9 +38,13 @@ if (!empty($_SESSION['cart'])) {
             echo "</form>";
             echo "</div>";
 
+            $exp = isExpired($productId);
+            $prc = $exp ? $product['product_disc_price'] : $product['product_price'];
+            $clr = $exp ? "green" : "";
             echo "<div class='cart' style='width: 4000px; '>";
-            echo " : " . ($product['product_disc_price'] * $quantity) . " tl"; 
+            echo "<p style='color:" . $clr . ";'> : " . ($prc * $quantity) . " tl</p>" ;
             echo "</div>";
+            
 
             echo "<div class='cart' style='width: 4000px; '>";
             echo "<a href='remove_from_cart.php?product_id=" . urlencode($productId) . "' class='ml-4 text-red-500 hover:text-red-700'>Remove</a>";
@@ -55,7 +59,10 @@ if (!empty($_SESSION['cart'])) {
     $dtot = 0;
     foreach($_SESSION['cart'] as $productId => $quantity) {
         $product = getProductById($productId);
-        $dtot += ($product['product_disc_price'] * $quantity);
+        $exp = isExpired($productId);
+        $prc = $exp ? $product['product_disc_price'] : $product['product_price'];
+        
+        $dtot += ($prc * $quantity);
         $tot += ($product['product_price'] * $quantity);
     }
 

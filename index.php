@@ -3,7 +3,8 @@ session_start();
 require "db.php";
 
 if (isset($_SESSION['token'])) {
-    $user = getCustomerByToken($_SESSION['token']);
+    // Assuming you have a function to verify and get user data by token
+    $user = getCustomerByToken($_SESSION['token']); // Replace with your actual function
     if ($user != false) {
         header("Location: customer");
         exit;
@@ -142,22 +143,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="text" name="city" required placeholder="City" value="<?= htmlspecialchars($formData['city']) ?>" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <div class="relative">
-                    <i class="fas fa-map-marker-alt absolute text-gray-400 left-3 top-3"></i>
-                    <input type="text" name="district" required placeholder="District" value="<?= htmlspecialchars($formData['district']) ?>" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                <i class="fas fa-map-marker-alt absolute text-gray-400 left-3 top-3"></i>
+                <input type="text" name="district" required placeholder="District" value="<?= htmlspecialchars($formData['district']) ?>" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <div class="relative">
-                    <i class="fas fa-home absolute text-gray-400 left-3 top-3"></i>
-                    <input type="text" name="address" required placeholder="Address" value="<?= htmlspecialchars($formData['address']) ?>" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                <i class="fas fa-home absolute text-gray-400 left-3 top-3"></i>
+                <input type="text" name="address" required placeholder="Address" value="<?= htmlspecialchars($formData['address']) ?>" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <div class="relative">
-                    <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
-                    <input type="password" name="password" required placeholder="Password" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
+                <input type="password" name="password" required placeholder="Password" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
                 </div>
                 <div class="relative">
-                    <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
-                    <input type="password" name="passwordconfirm" id="customerPasswordConfirm" required placeholder="Confirm Password" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
-                    <p id="customerPasswordError" class="hidden text-red-500">Passwords do not match.</p>
-                </div>
+                <i class="fas fa-lock absolute text-gray-400 left-3 top-3"></i>
+                <input type="password" name="passwordconfirm" id="customerPasswordConfirm" required placeholder="Confirm Password" class="w-full pl-10 pr-4 py-2 border rounded-md focus:border-blue-500 focus:outline-none">
+                <p id="customerPasswordError" class="hidden text-red-500">Passwords do not match.</p>                </div>
                 <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">Register</button>
             </form>
         </div>
@@ -177,7 +177,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             document.getElementById("customerForm").style.display = "block";
             document.getElementById("formsContainer").style.backgroundColor = '#e0ffe8';
         }
-
         function validatePasswords(formId) {
             const form = document.getElementById(formId);
             const password = form.querySelector('input[name="password"]').value;
