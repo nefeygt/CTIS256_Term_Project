@@ -3,7 +3,7 @@ require "../db.php";
 session_start();
 
 if(!isset($_SESSION['token'])) {
-    header("Location: login.php"); // Redirect to login if not authenticated
+    header("Location: ../login.php"); // Redirect to login if not authenticated
     exit;
 }
 

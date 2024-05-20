@@ -1,9 +1,11 @@
 <?php
-require "../db.php";
+
 session_start();
+require "../db.php";
+
 
 if(!isset($_SESSION['token'])) {
-    header("Location: login.php"); // Redirect to login if not authenticated
+    header("Location: ../login.php"); // Redirect to login if not authenticated
     exit;
 }
 
@@ -31,6 +33,7 @@ $pages = ceil($total / $perPage);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Page</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.tailwindcss.com" rel="stylesheet">
     <style>
         .modal {
             display: none; 
@@ -52,6 +55,19 @@ $pages = ceil($total / $perPage);
             max-width: 400px;
             text-align: center;
         }
+        
+        .cart-popup ul li {
+            color: #333; /* Dark grey text */
+            background-color: #fff; /* White background */
+            list-style-type: none; /* Removes bullet points */
+        }
+        .cart-popup ul li a {
+            color: red; /* Red color for links */
+        }
+
+        #logoutModal {
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -62,8 +78,7 @@ $pages = ceil($total / $perPage);
             <button onclick="showLogoutModal()" class="text-red-300 hover:text-red-500 ml-4">Logout</button>
             <div class="relative">
                 <div class="cart-icon" onclick="toggleCart()">🛒</div>
-                <div class="cart-popup hidden absolute right-0 w-64 bg-white shadow-lg p-4">
-                    <!-- Dynamic cart items will be added here -->
+                <div class="cart-popup hidden absolute right-0 w-300 bg-white shadow-lg p-4">
                     <?php include 'cart_popup.php'; ?>
                 </div>
             </div>
@@ -96,9 +111,9 @@ $pages = ceil($total / $perPage);
                     <td class="py-3 px-6"><?= htmlspecialchars($product['product_city']) ?></td>
                     <td class="py-3 px-6"><?= htmlspecialchars($product['product_district']) ?></td>
                     <td class="py-3 px-6 text-center">
-                        <form action="" method="post">
+                        <form action="add_to_cart.php" method="post">
                             <input type="hidden" name="product_id" value="<?= $product['product_id'] ?>">
-                            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded">Add to Cart</button>
+                            <button class="add-to-cart bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded">Add to Cart</button>
                         </form>
                     </td>
                 </tr>
@@ -141,5 +156,12 @@ $pages = ceil($total / $perPage);
             window.location.href = '../logout.php';
         }
     </script>
+
+    <form action="update_cart.php" method="post">
+        <input type="hidden" name="">
+        <button type="submit" name="increase_prd" style="color: greenyellow">+</button>
+        <button type="submit" name="decrease_prd" style="color: red">-</button>
+    </form>
+
 </body>
 </html>
