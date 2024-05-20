@@ -272,7 +272,9 @@ function getFilteredProducts($city, $district, $query) {
         foreach ($stocks as $stock) {
             if ($product['product_id'] == $stock['product_id']) {
                 $product['stock'] = $stock['stock'];
-                $filteredProducts[] = $product;
+                if($product['stock'] > 0) {
+                    $filteredProducts[] = $product;
+                }
             }
         }
     }
