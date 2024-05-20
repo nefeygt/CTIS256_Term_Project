@@ -77,6 +77,9 @@ if (isset($_POST['login'])) {
             </div>
             <button type="submit" name="login" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">Log In</button>
         </form>
+        <div class="text-center mt-6">
+            <p class="text-gray-600">Don't have an account? <a href="./" class="text-blue-500 hover:underline">Create one here</a>.</p>
+        </div>
     </div>
 </body>
 </html>
