@@ -35,6 +35,27 @@ $pages = ceil($total / $perPage);
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.tailwindcss.com" rel="stylesheet">
     <style>
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0, 0, 0, 0.4); 
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; 
+            padding: 20px; 
+            border: 1px solid #888;
+            width: 80%; 
+            max-width: 400px;
+            text-align: center;
+        }
+        
         .cart-popup ul li {
             color: #333; /* Dark grey text */
             background-color: #fff; /* White background */
@@ -42,6 +63,10 @@ $pages = ceil($total / $perPage);
         }
         .cart-popup ul li a {
             color: red; /* Red color for links */
+        }
+
+        #logoutModal {
+            display: none;
         }
     </style>
 </head>
